@@ -12,4 +12,5 @@ char *getGroup(char *token);
 char *getProp(char *token);
 char *getParam(char *token);
 char *getValue(char *token);
+VCardErrorCode endBuff(char *buff);
 #endif

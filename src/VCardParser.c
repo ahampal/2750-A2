@@ -1,7 +1,7 @@
 #include "parserHelper.h"
 #include <ctype.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 char* unfold(FILE *fp) {
     char *buff;
@@ -10,7 +10,7 @@ char* unfold(FILE *fp) {
     fseek(fp, 0, SEEK_END);
     fileLen = ftell(fp);
     rewind(fp);
-    buff = malloc(sizeof(char)*fileLen);
+    buff = malloc(sizeof(char)* (fileLen + 1));
 
     /*
     load into memory
@@ -28,6 +28,8 @@ char* unfold(FILE *fp) {
             buff[i] = '\0';
         }
     }
+
+    buff[fileLen] = '\0';
 
     return buff;
 }
@@ -65,6 +67,11 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
     char *lVal;
     Card *ptr;
 
+    if(endBuff(buffer) != OK) {
+        if(DEBUG) {printf("Card could not be created. Missing End.\n");}
+        return INV_CARD;
+    }
+    
     ptr = *newCardObject;
     token = strtok(buffer, "\r\n");
     if(token == NULL) {
@@ -86,8 +93,13 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         return INV_CARD;
     }
 
-    token = strtok(NULL, "\n");
+    token = strtok(NULL, "\r\n");
     if(token == NULL) {
+        return INV_CARD;
+    }
+
+    if(endBuff(buffer) != OK) {
+        if(DEBUG) {printf("Card could not be created. Missing End.\n");}
         return INV_CARD;
     }
 
@@ -98,23 +110,39 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         lVal = getValue(token);
         if(lGroup != NULL) {
             if(DEBUG) {printf("\nGroup: %s\n", lGroup);}
+            free(lGroup);
         }
 
         if(DEBUG) {printf("\nProperty: %s\n", lProp);}
+        free(lProp);
         if(lParam != NULL) {
             if(DEBUG) {printf("Param: %s\n", lParam);}
+            free(lParam);
         }
         if(DEBUG) {printf("Value: %s\n", lVal);}
+        free(lVal);
         token = strtok(NULL, "\r\n");
     }
     return OK;
 }
 
+VCardErrorCode endBuff(char *buff) {
+    char toCmp[10] = "END:VCARD\0";
+    for(int i = 0; i < 10; i++) {
+        if(*(buff + strlen(buff) - 16 + i) != toCmp[i]) {
+            return INV_CARD;
+        }
+    }
+    return OK;
+}
+
 char* upperCaseStr(char *a) {
+    int j;
     if(a == NULL) {
         return NULL;
     }
-    for(int i = 0; a[i] != '\0'; i++) {
+    j = strlen(a);
+    for(int i = 0; i < j; i++) {
         a[i] = toupper(a[i]);
     }
     return a;
@@ -257,9 +285,9 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
     *newCardObject = malloc(sizeof(Card));
 
     if(fileCheck(fileName, fp) != OK) {
-        newCardObject = NULL;
         fclose(fp);
         free(*newCardObject);
+        newCardObject = NULL;
         return INV_FILE;
     }
 
@@ -271,11 +299,11 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
     //parsing
     retVal = parseFile(buffCpy, newCardObject);
     if(retVal != OK) {
-        newCardObject = NULL;
         fclose(fp);
         free(buffer);
         free(buffCpy);
         free(*newCardObject);
+        newCardObject = NULL;
         return retVal;
     }
 
