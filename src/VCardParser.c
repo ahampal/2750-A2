@@ -1,7 +1,7 @@
 #include "parserHelper.h"
 #include <ctype.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 char* unfold(FILE *fp) {
     char *buff;
@@ -64,6 +64,7 @@ VCardErrorCode fileCheck(char *fileName, FILE *fp) {
 }
 
 VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
+    //variable declarations
     char *token = NULL;
     char *lGroup = NULL;
     char *lProp = NULL;
@@ -73,6 +74,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
     VCardErrorCode retVal;
     int groupLen;
 
+    //check for end property
     if(endBuff(buffer) != OK) {
         if(DEBUG) {printf("Card could not be created. Missing End.\n");}
         return INV_CARD;
@@ -83,11 +85,13 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         return INV_CARD;
     }
 
+
     token = strtok(NULL, "\r\n");
     if(token == NULL) {
         return INV_CARD;
     }
 
+    //check version
     if(strcmp(upperCaseStr(token), "VERSION:4.0") != 0) {
         if(DEBUG) {printf("Card could not be created. File must be version 4.0.\n");}
         return INV_CARD;
@@ -98,47 +102,52 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         return INV_CARD;
     }
 
-
+    //parse every content line until end of vcard
     while(token != NULL && strcmp(token, "END:VCARD") != 0) {
         
+        //get group
         groupLen = 0;
         lGroup = getGroup(token);
         if(lGroup != NULL) {
             if(DEBUG) {printf("\nGroup: %s\n", lGroup);}
             retVal = checkGroup(lGroup);
             if(retVal != OK) {
-                freeLine(lGroup, lProp, lParam, lVal);
+                freeLine(&lGroup, &lProp, &lParam, &lVal);
                 return retVal;
             }
             groupLen = strlen(lGroup);
         }
 
+        //get property
         lProp = getProp(token);
         if(DEBUG) {printf("\nProperty: %s\n", lProp);}
         retVal = checkProp(lProp);
         if(retVal != OK) {
-            freeLine(lGroup, lProp, lParam, lVal);
+            freeLine(&lGroup, &lProp, &lParam, &lVal);
             return retVal;
         }
 
+        //get parameter
         lParam = getParam(token);
         if(lParam != NULL) {
             if(DEBUG) {printf("Param: %s\n", lParam);}
             retVal = checkParam(lParam);
             if(retVal != OK) {
-                freeLine(lGroup, lProp, lParam, lVal);
+                freeLine(&lGroup, &lProp, &lParam, &lVal);
                 return retVal;
             }
         }
 
+        //get value
         lVal = getValue(token);
         retVal = checkValue(lVal);
         if(DEBUG) {printf("Value: %s\n", lVal);}
         if(retVal != OK) {
-            freeLine(lGroup, lProp, lParam, lVal);
+            freeLine(&lGroup, &lProp, &lParam, &lVal);
             return retVal;
         }
 
+        //create property struct
         newProp = malloc(sizeof(Property));
         if(lGroup != NULL) {
             newProp->group = malloc(sizeof(char) * (strlen(lGroup) + 1));
@@ -147,20 +156,27 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         else {
             newProp->group = NULL;
         }
+
         newProp->name = malloc(sizeof(char) * (strlen(lProp) + 1));
         newProp->parameters = initializeList(&printParameter, &deleteParameter, &compareParameters);
         newProp->values = initializeList(&printValue, &deleteValue, &compareValues);
+
         strcpy(newProp->name, lProp);
         strncpy(newProp->group, lGroup, groupLen);
+
         insertParam(newProp->parameters, lParam);
         insertValue(newProp->values, lVal);
+
+        //place property in appropriate location
         if(strcmp(lProp, "FN") == 0) {
             (*newCardObject)->fn = newProp;
         }
         else {
             insertBack((*newCardObject)->optionalProperties, newProp);
         }
-        freeLine(lGroup, lProp, lParam, lVal);
+
+        //continue for next line
+        freeLine(&lGroup, &lProp, &lParam, &lVal);
         token = strtok(NULL, "\r\n");
         
     }
@@ -217,26 +233,26 @@ void insertValue(List *valList, char *lVal) {
     return;
 }
 
-void freeLine(char *lGroup, char *lProp, char *lParam, char *lVal) {
+void freeLine(char **lGroup, char **lProp, char **lParam, char **lVal) {
 
-    if(lGroup != NULL) {
-        free(lGroup);
-        lGroup = NULL;
+    if(*lGroup != NULL) {
+        free(*lGroup);
+        *lGroup = NULL;
     }
 
-    if(lProp != NULL) {
-        free(lProp);
-        lProp = NULL;
+    if(*lProp != NULL) {
+        free(*lProp);
+        *lProp = NULL;
     }
 
-    if(lParam != NULL) {
-        free(lParam);
-        lParam = NULL;
+    if(*lParam != NULL) {
+        free(*lParam);
+        *lParam = NULL;
     }
 
-    if(lVal != NULL) {
-        free(lVal);
-        lVal = NULL;
+    if(*lVal != NULL) {
+        free(*lVal);
+        *lVal = NULL;
     }
 
     return;
@@ -368,6 +384,10 @@ char *getProp(char *token) {
     val = strchr(token, ':');
     group = strchr(token, '.');
 
+    if(val == NULL) {
+        return NULL;
+    }
+
     if(group != NULL && group < val) {
         toReturn = malloc(sizeof(char) * (val - group + 1));
         strncpy(toReturn, group + 1, val - group - 1);
@@ -466,6 +486,7 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
     if(fileCheck(fileName, fp) != OK) {
         fclose(fp);
         deleteCard(*newCardObject);
+        *newCardObject = NULL;
         newCardObject = NULL;
         return INV_FILE;
     }
@@ -482,6 +503,7 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
         free(buffer);
         free(buffCpy);
         deleteCard(*newCardObject);
+        *newCardObject = NULL;
         newCardObject = NULL;
         return retVal;
     }
@@ -502,7 +524,7 @@ void deleteCard(Card* obj) {
     deleteDate(obj->birthday);
     deleteDate(obj->anniversary);
     free(obj);
-    
+    obj = NULL;
     return;
 }
 
@@ -521,12 +543,12 @@ char* printError(VCardErrorCode err) {
 
 void deleteProperty(void* toBeDeleted) {
 
-    Property *a;
-    a = (Property *)toBeDeleted;
-
     if(toBeDeleted == NULL) {
         return;
     }
+    
+    Property *a;
+    a = (Property *)toBeDeleted;
     
     if(a->group != NULL) {
         free(a->group);
