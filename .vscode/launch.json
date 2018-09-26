@@ -2,27 +2,36 @@
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "(gdb) Launch",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "testAPI",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/path/to/gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "(gdb) Launch",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "/mnt/c/Users/Amit/Documents/Code/2750-A1/assign1/bin/testAPI",
+                "args": ["testCard.vcf"],
+                "stopAtEntry": true,
+                "cwd": "/mnt/c/Users/Amit/Documents/Code/2750-A1/assign1/test_files/",
+                "externalConsole": true,
+                "pipeTransport": {
+                    "debuggerPath": "/usr/bin/gdb",
+                    "pipeProgram": "C:\\Windows\\System32\\bash.exe",
+                    "pipeArgs": ["-c"],
+                    "pipeCwd": ""
+                },
+                "windows": {
+                    "MIMode": "gdb",
+                    "setupCommands": [
+                        {
+                            "description": "Enable pretty-printing for gdb",
+                            "text": "-enable-pretty-printing",
+                            "ignoreFailures": true
+                        }
+                    ]
+                },
+                "sourceFileMap": {
+                    "/mnt/c": "C:\\"
                 }
-            ]
-        }
-    ]
-}
+            }
+        ]
+    }

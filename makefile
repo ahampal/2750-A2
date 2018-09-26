@@ -12,7 +12,7 @@ list:
 	ranlib bin/LinkedListAPI.a
 
 parser:
-	$(CC) $(CFLAGS) -c src/VCardParser.c bin/LinkedListAPI.a -Iinclude -o bin/VCardParser.o
+	$(CC) $(CFLAGS) -c src/VCardParser.c -Iinclude -o bin/VCardParser.o
 	ar rc bin/VCardParser.a bin/VCardParser.o
 	ranlib bin/VCardParser.a
 
@@ -24,9 +24,9 @@ testBuild:
 
 test:
 	cd bin; \
-	  valgrind --leak-check=full ./testAPI ../test_files/testCard.vcf
+	  valgrind --leak-check=full --track-origins=yes ./testAPI ../test_files/testCard.vcf
 	  cd ..;
 
-all: list parser testBuild clean test
+all: list parser testBuild test
 
 
