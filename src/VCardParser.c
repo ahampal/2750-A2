@@ -164,23 +164,92 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         strcpy(newProp->name, lProp);
         strncpy(newProp->group, lGroup, groupLen);
 
-        insertParam(newProp->parameters, lParam);
-        insertValue(newProp->values, lVal);
+        insertAllParams(newProp->parameters, lParam);
+        insertAllValues(newProp->values, lVal);
 
         //place property in appropriate location
         if(strcmp(lProp, "FN") == 0) {
-            (*newCardObject)->fn = newProp;
+            if((*newCardObject)->fn == NULL) {
+                (*newCardObject)->fn = newProp;
+            }
+            else {
+                insertBack((*newCardObject)->optionalProperties, newProp);
+            }
         }
         else {
             insertBack((*newCardObject)->optionalProperties, newProp);
         }
 
-        //continue for next line
+        //free current and get next
         freeLine(&lGroup, &lProp, &lParam, &lVal);
         token = strtok(NULL, "\r\n");
         
     }
     return OK;
+}
+
+void insertAllParams(List *parList, char *lParam) {
+    char *endPos = NULL;
+    char *currPos = NULL;
+    char *currParam = NULL;
+
+    if(numSemiColons(lParam) == 0) {
+        insertParam(parList, lParam);
+    }
+    else {
+        endPos = strchr(lParam, ';');
+        currPos = lParam;
+        while(endPos != NULL) {
+            currParam = malloc(sizeof(char) * (endPos - currPos + 1));
+            strncpy(currParam, currPos, endPos - currPos);
+            currParam[endPos - currPos] = '\0';
+            insertParam(parList, currParam);
+            free(currParam);
+            currPos = endPos + 1;
+            endPos = NULL;
+            endPos = strchr(currPos, ';');
+        }
+        endPos = lParam + strlen(lParam);
+        currParam = malloc(sizeof(char) * (endPos - currPos + 1));
+        strncpy(currParam, currPos, endPos - currPos);
+        currParam[endPos - currPos] = '\0';
+        insertParam(parList, currParam);
+        free(currParam);
+    }
+
+    return;
+}
+
+void insertAllValues(List *valList, char *lVal) {
+    char *endPos;
+    char *currVal;
+    char *currPos;
+    
+    if(numSemiColons(lVal) == 0) {
+        insertValue(valList, lVal);
+    }
+    else {
+        endPos = strchr(lVal, ';');
+        currPos = lVal;
+        while(endPos != NULL) {
+            currVal = malloc(sizeof(char) * (endPos - currPos + 1));
+            strncpy(currVal, currPos, endPos - currPos);
+            currVal[endPos - currPos] = '\0';
+            insertValue(valList, currVal);
+            free(currVal);
+            currPos = endPos + 1;
+            endPos = NULL;
+            endPos = strchr(currPos, ';');
+        }
+        endPos = lVal + strlen(lVal);
+        currVal = malloc(sizeof(char) * (endPos - currPos + 1));
+        strncpy(currVal, currPos, endPos - currPos);
+        currVal[endPos - currPos] = '\0';
+        insertValue(valList, currVal);
+        free(currVal);
+    }
+
+    return;
 }
 
 int numEqualSigns(char *a) {
@@ -546,7 +615,7 @@ void deleteProperty(void* toBeDeleted) {
     if(toBeDeleted == NULL) {
         return;
     }
-    
+
     Property *a;
     a = (Property *)toBeDeleted;
     
