@@ -17,9 +17,11 @@ VCardErrorCode checkGroup(char *lGroup);
 VCardErrorCode checkProp(char *lProp);
 VCardErrorCode checkParam(char *lParam);
 VCardErrorCode checkValue(char *lVal);
-void freeLine(char *lGroup, char *lProp, char *lParam, char *lVal);
+void freeLine(char **lGroup, char **lProp, char **lParam, char **lVal);
 void insertParam(List *parList, char *lParam);
 void insertValue(List *valList, char *lVal);
 int numEqualSigns(char *a);
+void insertAllParams(List *parList, char *lParam);
+void insertAllValues(List *valList, char *lVal);
 
 #endif
