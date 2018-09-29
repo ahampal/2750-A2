@@ -31,6 +31,29 @@ char* unfold(FILE *fp) {
 
     buff[fileLen] = '\0';
 
+    for(int i = 0; i < fileLen; i++) {
+        if(buff[i] == '\r') {
+            if(buff[i+1] == '\n') {
+                continue;
+            }
+            else {
+                free(buff);
+                buff = NULL;
+                break;
+            }
+        }
+        else if(buff[i] == '\n') {
+            if(buff[i-1] == '\r') {
+                continue;
+            }
+            else {
+                free(buff);
+                buff = NULL;
+                break;
+            }
+        }
+    }
+
     return buff;
 }
 
@@ -73,6 +96,8 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
     Property *newProp = NULL;
     VCardErrorCode retVal;
     int groupLen;
+    DateTime *newDate = NULL;
+    char *tPos = NULL;
 
     //check for end property
     if(endBuff(buffer) != OK) {
@@ -168,13 +193,59 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         insertAllValues(newProp->values, lVal);
 
         //place property in appropriate location
-        if(strcmp(lProp, "FN") == 0) {
+        if(strcmp(upperCaseStr(lProp), "FN") == 0) {
             if((*newCardObject)->fn == NULL) {
                 (*newCardObject)->fn = newProp;
             }
             else {
                 insertBack((*newCardObject)->optionalProperties, newProp);
             }
+        }
+        else if(strcmp(upperCaseStr(lProp), "BDAY") == 0 || strcmp(upperCaseStr(lProp), "ANNIVERSARY") == 0) {
+            deleteProperty(newProp);
+            newDate = malloc( sizeof(DateTime) + ( (strlen(lVal) + 1) *sizeof(char) ) );
+            if(strstr(lParam, "VALUE=text") == NULL) {
+                newDate->isText = false;
+                strcpy(newDate->text, "\0");
+                if(lVal[strlen(lVal) - 1] == 'Z') {
+                    newDate->UTC = true;
+                }
+                else {
+                    newDate->UTC = false;
+                }
+
+                tPos = strchr(lVal, 'T');
+                if(tPos == NULL) {
+                    strcpy(newDate->date, lVal);
+                    strcpy(newDate->time, "\0");
+                }
+
+                else if(tPos == lVal) {
+                    strcpy(newDate->time, lVal);
+                    strcpy(newDate->date, "\0");
+                }
+                else {
+                    strncpy(newDate->date, lVal, tPos-lVal+1);
+                    newDate->date[tPos-lVal] = '\0';
+                    strcpy(newDate->time, tPos);
+                }
+            }
+            else {
+                newDate->isText = true;
+                newDate->UTC = false;
+                strcpy(newDate->text, lVal);
+                strcat(newDate->text, "\0");
+                strcpy(newDate->date, "\0");
+                strcpy(newDate->time, "\0");
+            }
+            
+            if(strcmp(upperCaseStr(lProp), "BDAY") == 0) {
+                (*newCardObject)->birthday = newDate;
+            }
+            else {
+                (*newCardObject)->anniversary = newDate;
+            }
+            
         }
         else {
             insertBack((*newCardObject)->optionalProperties, newProp);
@@ -275,16 +346,18 @@ void insertParam(List *parList, char *par) {
     char *end = NULL;
     Parameter *toInsert = NULL;
 
-    if(parList == NULL || par == NULL) {
+    if(parList == NULL || par == NULL || strcmp(par, "") == 0) {
         return;
     }
 
     equalSign = strchr(par, '=');
-    end = par + strlen(par);
+    end = strchr(par, '\0');
 
     toInsert = malloc(sizeof(Parameter) + sizeof(char) * (end - equalSign + 1));
     strncpy(toInsert->name, par, equalSign - par);
-    strncpy(toInsert->value, par + strlen(equalSign), end - equalSign);
+    toInsert->name[equalSign - par] = '\0';
+    strncpy(toInsert->value, equalSign + 1, end - equalSign);
+    strcat(toInsert->value, "\0");
     insertBack(parList, toInsert);
     return;
 }
@@ -298,6 +371,7 @@ void insertValue(List *valList, char *lVal) {
 
     toInsert = malloc(sizeof(char) * (strlen(lVal) + 1));
     strcpy(toInsert, lVal);
+    strcat(toInsert, "\0");
     insertBack(valList, toInsert);
     return;
 }
@@ -430,7 +504,9 @@ char *getGroup(char *token) {
     group = strchr(token, '.');
 
     if(val == NULL || group > val || group == NULL) {
-        return NULL;
+        toReturn = malloc(sizeof(char));
+        strcpy(toReturn, "\0");
+        return toReturn;
     }
 
     toReturn = malloc(sizeof(char) * (val - token ));
@@ -493,8 +569,8 @@ char *getParam(char *token) {
         strncpy(toReturn, group, val - group);
         toReturn[val - group] = '\0';
         if(numSemiColons(toReturn) == 0) {
-            free(toReturn);
-            return NULL;
+            strcpy(toReturn, "");
+            return toReturn;
         }
         else {
             sc = strchr(toReturn, ';');
@@ -509,8 +585,8 @@ char *getParam(char *token) {
         strncpy(toReturn, token, val - token);
         toReturn[val - token] = '\0';
         if(numSemiColons(toReturn) == 0) {
-            free(toReturn);
-            return NULL;
+            strcpy(toReturn, "");
+            return toReturn;
         }
         else {
             sc = strchr(toReturn, ';');
@@ -562,6 +638,13 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
 
     //unfold file
     buffer = unfold(fp);
+    if(buffer == NULL) {
+        fclose(fp);
+        deleteCard(*newCardObject);
+        *newCardObject = NULL;
+        newCardObject = NULL;
+        return INV_PROP;    
+    }
     buffCpy = malloc(sizeof(char) * (strlen(buffer) + 1));
     strcpy(buffCpy, buffer);
 
@@ -598,12 +681,48 @@ void deleteCard(Card* obj) {
 }
 
 char* printCard(const Card* obj) {
+    char *toReturn;
+    char *str;
+    Property *tmp;
+    ListIterator propIter;
+    void *node;
 
     if(obj == NULL) {
         return NULL;
     }
 
-    return NULL;    
+    str = printProperty(obj->fn);
+    toReturn = malloc( (sizeof(char) * (strlen(str) + 1)));
+    strcpy(toReturn, str);
+    strcat(toReturn, "\0");
+    free(str);
+
+    propIter = createIterator(obj->optionalProperties);
+    while((node = nextElement(&propIter)) != NULL) {
+        tmp = (Property *)node;
+        str = printProperty(tmp);
+        toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 1)));
+        strcat(toReturn, str);
+        strcat(toReturn, "\0");
+        free(str);
+    }
+
+    toReturn = realloc(toReturn, (sizeof(char) *(strlen(toReturn) + 2)));
+    strcat(toReturn, "\n");
+
+    str = printDate(obj->birthday);
+    toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 1)));
+    strcat(toReturn, str);
+    strcat(toReturn, "\0");
+    free(str);
+
+    str = printDate(obj->anniversary);
+    toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 1)));
+    strcat(toReturn, str);
+    strcat(toReturn, "\0");
+    free(str);
+
+    return toReturn;    
 }
 
 char* printError(VCardErrorCode err) {
@@ -662,7 +781,51 @@ int compareProperties(const void* first,const void* second) {
 }
 
 char* printProperty(void* toBePrinted) {
-    return NULL;
+    Property *a;
+    char *toReturn;
+    ListIterator valueIter;
+    ListIterator paramIter;
+    void *node;
+    char *str;
+    if(toBePrinted == NULL) {
+        return NULL;
+    }
+
+    a = (Property *)toBePrinted;
+
+    toReturn = malloc(sizeof(char) * (strlen(a->group) + strlen(a->name) + 3));
+    strcpy(toReturn, a->group);
+    strcat(toReturn, "\n");
+    strcat(toReturn, a->name);
+    strcat(toReturn, "\n");
+    strcat(toReturn, "\0");
+
+    paramIter = createIterator(a->parameters);
+    valueIter = createIterator(a->values);
+
+    while((node = nextElement(&paramIter)) != NULL) {
+        Parameter *tmp;
+        tmp = (Parameter *)node;
+        
+        str = a->parameters->printData(tmp);
+        toReturn = realloc(toReturn, strlen(toReturn) + strlen(str) + 1);
+        strcat(toReturn, str);
+        strcat(toReturn, "\0");
+        free(str);
+    }
+
+    while((node = nextElement(&valueIter)) != NULL) {
+        char *tmp;
+        tmp = (char *)node;
+
+        str = a->values->printData(tmp);
+        toReturn = realloc(toReturn, strlen(toReturn) + strlen(str) + 2);
+        strcat(toReturn, str);
+        strcat(toReturn, "\n");
+        strcat(toReturn, "\0");
+    }
+
+    return toReturn;
 }
 
 void deleteParameter(void* toBeDeleted) {
@@ -700,16 +863,22 @@ int compareParameters(const void* first,const void* second) {
 char* printParameter(void* toBePrinted) {
 
     Parameter *a;
-    a = (Parameter *)toBePrinted;
-
     char *toReturn;
 
-    toReturn = malloc(sizeof(char) * (220 + strlen(a->value)));
+    if(toBePrinted == NULL) {
+        toReturn = malloc(sizeof(char));
+        strcpy(toReturn, "");
+        return toReturn;
+    }
+    
+    a = (Parameter *)toBePrinted;
 
-    strcpy(toReturn, "Name: ");
-    strcat(toReturn, a->name);
-    strcat(toReturn, "\nValue: ");
+    toReturn = malloc(sizeof(char) * (204 + strlen(a->value)));
+
+    strcpy(toReturn, a->name);
+    strcat(toReturn, "\n");
     strcat(toReturn, a->value);
+    strcat(toReturn, "\n");
     strcat(toReturn, "\0");
 
     return toReturn;
@@ -754,7 +923,9 @@ char* printValue(void* toBePrinted) {
     char *a;
 
     if(toBePrinted == NULL) {
-        return NULL;
+        a = malloc(sizeof(char));
+        strcpy(a, "");
+        return a;
     }
 
     a = (char *)toBePrinted;
@@ -781,5 +952,28 @@ int compareDates(const void* first,const void* second) {
 }
 
 char* printDate(void* toBePrinted) {
-    return NULL;
+    DateTime *a;
+    char *toReturn;
+    if(toBePrinted == NULL) {
+        toReturn = malloc(sizeof(char));
+        strcpy(toReturn, "");
+        return toReturn;
+    }
+    
+    a = (DateTime *)toBePrinted;
+
+    if(a->isText == true) {
+        toReturn = malloc(sizeof(char) * strlen(a->text) + 1);
+        strcpy(toReturn, a->text);
+        toReturn[strlen(a->text)] = '\0';
+    }
+    else {
+        toReturn = malloc(sizeof(char) *(strlen(a->date) + strlen(a->time) + 3));
+        strcpy(toReturn, a->date);
+        strcat(toReturn, "\n");
+        strcat(toReturn, a->time);
+        strcat(toReturn, "\n");
+        strcat(toReturn, "\0");
+    }
+    return toReturn;
 }
