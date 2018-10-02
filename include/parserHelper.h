@@ -26,5 +26,6 @@ void insertAllValues(List *valList, char *lVal);
 VCardErrorCode beginBuff(char *buff);
 char *nextLine(char *buff);
 VCardErrorCode endCheck(char *a);
+char *myStrChr(char *a, int c);
 
 #endif

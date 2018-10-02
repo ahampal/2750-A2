@@ -6,7 +6,6 @@
 char* unfold(FILE *fp) {
     char *buff;
     int fileLen;
-    int lineLen;
 
     fseek(fp, 0, SEEK_END);
     fileLen = ftell(fp);
@@ -15,29 +14,21 @@ char* unfold(FILE *fp) {
 
     /*
     load into memory
-    remove CRLF and shift array over. NEED TO CHECK FOR LINE LENGTH.
+    remove CRLF and shift array over.
     */
-    lineLen = 0;
 
     for(int i = 0; i < fileLen; i++) {
         buff[i] = fgetc(fp);
         if(i > 1) {
-            if(buff[i] == ' ' && buff[i - 1] == '\n' && buff[i - 2] == '\r') {
-                if(lineLen > 998) {
-                    free(buff);
-                    buff = NULL;
-                    return buff;
-                }
-                lineLen = 0;
+            if((buff[i] == ' ' || buff[i] == (char)9 ) && buff[i - 1] == '\n' && buff[i - 2] == '\r') {
                 i = i - 3;
                 fileLen -= 3;
             }
         }
-        lineLen++;
     }
 
     buff[fileLen] = '\0';
-
+    
     for(int i = 0; i < fileLen - 1; i++) {
         if(buff[i] == '\r') {
             if(buff[i+1] == '\n') {
@@ -52,6 +43,25 @@ char* unfold(FILE *fp) {
     }
 
     return buff;
+}
+
+char *myStrChr(char *a, int c) {
+    int len;
+
+    if(a == NULL) {
+        return NULL;
+    }
+
+    len = strlen(a) + 1;
+
+    for(int i = 0; i < len; i++) {
+        if(*(a+i) == c) {
+            return a+i;
+        }
+    }
+
+    return NULL;
+    
 }
 
 VCardErrorCode fileCheck(char *fileName, FILE *fp) {
@@ -118,7 +128,10 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
 
     //parse every content line until end of vcard
     while(token != NULL) {
-        
+        if(strlen(token) > 998) {
+            free(buffCpy);
+            return INV_PROP;
+        }
         //get group
         groupLen = 0;
         lGroup = getGroup(token);
@@ -384,6 +397,15 @@ void insertParam(List *parList, char *par) {
 
     equalSign = strchr(par, '=');
     end = strchr(par, '\0');
+
+    if(equalSign == NULL) {
+        toInsert = malloc(sizeof(Parameter) + sizeof(char));
+        strncpy(toInsert->name, par, strlen(par));
+        toInsert->name[strlen(par)] = '\0';
+        strcpy(toInsert->value, "\0");
+        insertBack(parList, toInsert);
+        return;
+    }
 
     toInsert = malloc(sizeof(Parameter) + sizeof(char) * (end - equalSign + 1));
     strncpy(toInsert->name, par, equalSign - par);
@@ -686,11 +708,6 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
     VCardErrorCode retVal;
 
     fp = fopen(fileName, "r");
-
-    if(*newCardObject != NULL) {
-        free(*newCardObject);
-        *newCardObject = NULL;
-    }
 
     *newCardObject = malloc(sizeof(Card));
     (*newCardObject)->optionalProperties = initializeList(&printProperty, &deleteProperty, &compareProperties);

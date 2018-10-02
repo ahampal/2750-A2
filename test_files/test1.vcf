@@ -12,6 +12,7 @@ ADR;TYPE=HOME;LABEL="42 Plantation St.Baytown LA 30314\nUnited States of America
 EMAIL:forrestgump@example.com
 REV:20080424T195243Z
 x-qq:21588891
+FN:Simon Perreault
 N:Perreault;Simon;;;ing. jr,M.Sc.
 BDAY:--0203
 ANNIVERSARY:200908081430-0500
@@ -30,6 +31,7 @@ KEY;TYPE=work;VALUE=uri:
 TZ:-0500
 URL;TYPE=home:http://nomis80.org
 N:Gump;Forrest;;Mr.;
+FN:Forrest Gump
 ORG:Bubba Gump Shrimp Co.
 TITLE:Shrimp Man
 PHOTO;VALUE=URI;TYPE=GIF:http://www.example.com/dir_photos/my_photo.gif

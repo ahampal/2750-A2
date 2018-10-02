@@ -1,7 +1,7 @@
 #include "VCardParser.h"
 
 int main(int argc, char **argv) {
-    Card *testCardOne = NULL;
+    Card *testCardOne;
     char *printedCard = NULL;
     VCardErrorCode retVal;
     char *retString;
