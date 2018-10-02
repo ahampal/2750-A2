@@ -1,0 +1,10 @@
+BEGIN:VCARD
+VERSION:4.0
+N:Muller;CCCIsabella;;;
+FN:CCCIsabella Muller
+ORG:Bubba Gump Shrimp Co.
+TITLE:Shrimp Man
+PHOTO;MEDIATYPE=image/gif:http://www.example.com/dir_photos/my_photo.gif
+TEL;TYPE=work,voice;VALUE=uri:tel:+16829185770
+REV:20080424T195243Z
+END:VCARD

@@ -23,5 +23,8 @@ void insertValue(List *valList, char *lVal);
 int numEqualSigns(char *a);
 void insertAllParams(List *parList, char *lParam);
 void insertAllValues(List *valList, char *lVal);
+VCardErrorCode beginBuff(char *buff);
+char *nextLine(char *buff);
+VCardErrorCode endCheck(char *a);
 
 #endif

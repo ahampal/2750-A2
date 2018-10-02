@@ -6,6 +6,7 @@
 char* unfold(FILE *fp) {
     char *buff;
     int fileLen;
+    int lineLen;
 
     fseek(fp, 0, SEEK_END);
     fileLen = ftell(fp);
@@ -16,34 +17,30 @@ char* unfold(FILE *fp) {
     load into memory
     remove CRLF and shift array over. NEED TO CHECK FOR LINE LENGTH.
     */
+    lineLen = 0;
 
     for(int i = 0; i < fileLen; i++) {
         buff[i] = fgetc(fp);
         if(i > 1) {
             if(buff[i] == ' ' && buff[i - 1] == '\n' && buff[i - 2] == '\r') {
+                if(lineLen > 998) {
+                    free(buff);
+                    buff = NULL;
+                    return buff;
+                }
+                lineLen = 0;
                 i = i - 3;
+                fileLen -= 3;
             }
         }
-        if( i == fileLen - 1) {
-            buff[i] = '\0';
-        }
+        lineLen++;
     }
 
     buff[fileLen] = '\0';
 
-    for(int i = 0; i < fileLen; i++) {
+    for(int i = 0; i < fileLen - 1; i++) {
         if(buff[i] == '\r') {
             if(buff[i+1] == '\n') {
-                continue;
-            }
-            else {
-                free(buff);
-                buff = NULL;
-                break;
-            }
-        }
-        else if(buff[i] == '\n') {
-            if(buff[i-1] == '\r') {
                 continue;
             }
             else {
@@ -98,37 +95,29 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
     int groupLen;
     DateTime *newDate = NULL;
     char *tPos = NULL;
+    int numContentLines = 0;
+    char *buffCpy;
 
-    //check for end property
-    if(endBuff(buffer) != OK) {
-        if(DEBUG) {printf("Card could not be created. Missing End.\n");}
+    //check for begin syntax
+
+    if(beginBuff(buffer) != OK) {
+        if(DEBUG) {printf("Card could not be created. Incorrect/Missing begin.\n");}
         return INV_CARD;
     }
     
-    token = strtok(buffer, "\r\n");
+    token = buffer;
+
     if(token == NULL) {
         return INV_CARD;
     }
-
-
+    buffCpy = malloc(sizeof(char) * (strlen(buffer) + 1));
+    strncpy(buffCpy, buffer, strlen(buffer) + 1);
+    token = strtok(buffCpy, "\r\n");
     token = strtok(NULL, "\r\n");
-    if(token == NULL) {
-        return INV_CARD;
-    }
-
-    //check version
-    if(strcmp(upperCaseStr(token), "VERSION:4.0") != 0) {
-        if(DEBUG) {printf("Card could not be created. File must be version 4.0.\n");}
-        return INV_CARD;
-    }
-
     token = strtok(NULL, "\r\n");
-    if(token == NULL) {
-        return INV_CARD;
-    }
 
     //parse every content line until end of vcard
-    while(token != NULL && strcmp(token, "END:VCARD") != 0) {
+    while(token != NULL) {
         
         //get group
         groupLen = 0;
@@ -138,6 +127,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
             retVal = checkGroup(lGroup);
             if(retVal != OK) {
                 freeLine(&lGroup, &lProp, &lParam, &lVal);
+                free(buffCpy);
                 return retVal;
             }
             groupLen = strlen(lGroup);
@@ -149,6 +139,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         retVal = checkProp(lProp);
         if(retVal != OK) {
             freeLine(&lGroup, &lProp, &lParam, &lVal);
+            free(buffCpy);
             return retVal;
         }
 
@@ -159,6 +150,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
             retVal = checkParam(lParam);
             if(retVal != OK) {
                 freeLine(&lGroup, &lProp, &lParam, &lVal);
+                free(buffCpy);
                 return retVal;
             }
         }
@@ -169,6 +161,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         if(DEBUG) {printf("Value: %s\n", lVal);}
         if(retVal != OK) {
             freeLine(&lGroup, &lProp, &lParam, &lVal);
+            free(buffCpy);
             return retVal;
         }
 
@@ -252,10 +245,49 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         }
 
         //free current and get next
+        numContentLines++;
         freeLine(&lGroup, &lProp, &lParam, &lVal);
         token = strtok(NULL, "\r\n");
+        if(endCheck(token) == OK) {
+            token = NULL;
+        }
         
     }
+
+    if(endBuff(buffer) != OK) {
+        if(DEBUG) {printf("Card could not be created. Incorrect/missing end.\n");}
+        free(buffCpy);
+        return INV_CARD;
+    }
+
+    if(numContentLines == 0) {
+        if(DEBUG) {printf("Card could not be created. No Content Lines.\n");}
+        free(buffCpy);
+        return INV_CARD;
+    }
+
+    if((*newCardObject)->fn == NULL) {
+        if(DEBUG) {printf("Card could not be created. No FN property.\n");}
+        free(buffCpy);
+        return INV_CARD;
+    }
+    free(buffCpy);
+    return OK;
+}
+
+VCardErrorCode endCheck(char *a) {
+    char toCmp[12] = "END:VCARD\r\n";
+
+    if(a == NULL) {
+        return OK;
+    }
+
+    for(int i = 0; a[i] != '\0'; i++) {
+        if(a[i] != tolower(toCmp[i])) {
+            return INV_PROP;
+        }
+    }
+
     return OK;
 }
 
@@ -404,9 +436,11 @@ void freeLine(char **lGroup, char **lProp, char **lParam, char **lVal) {
 VCardErrorCode checkProp(char *lProp) {
 
     if(lProp == NULL) {
+        if(DEBUG) {printf("1\n");}
         return INV_PROP;
     }
 
+    /*
     int flag;
 
     char name[35][15]  = {"SOURCE\0", "KIND\0" , "FN\0" , "N\0" , "NICKNAME\0"
@@ -427,6 +461,7 @@ VCardErrorCode checkProp(char *lProp) {
     if(flag != 1) {
         return INV_PROP;
     }
+    */
     return OK;
 }
 
@@ -441,11 +476,13 @@ VCardErrorCode checkValue(char *lVal) {
 VCardErrorCode checkGroup(char *lGroup) {
 
     if (strlen(lGroup) < 0) {
+        if(DEBUG) {printf("2\n");}
         return INV_PROP;
     }
 
     for(int i = 0; i < strlen(lGroup); i++) {
         if(isalnum(lGroup[i]) == 0 && lGroup[i] != '-') {
+            if(DEBUG) {printf("3\n");}
             return INV_PROP;
         }
     }
@@ -453,14 +490,40 @@ VCardErrorCode checkGroup(char *lGroup) {
     return OK;
 }
 
-VCardErrorCode endBuff(char *buff) {
-    char toCmp[10] = "END:VCARD\0";
-    for(int i = 0; i < 9; i++) {
-        if(buff[strlen(buff) -16 + i] != toCmp[i]) {
-            if(DEBUG) {printf("%s\n", buff + strlen(buff) - 16);}
+VCardErrorCode beginBuff(char *buff) {
+    char toCmp[26] = "BEGIN:VCARD\r\nVERSION:4.0\r\n";
+
+    if (!buff) return INV_CARD;
+
+    for(int i = 0; toCmp[i] != '\n'; i++) {
+        if(toCmp[i] != toupper(buff[i])) {
             return INV_CARD;
         }
     }
+    return OK;
+}
+
+VCardErrorCode endBuff(char *buff) {
+    char toCmp[14] = "\r\nEND:VCARD\r\n";
+    char *ptr = NULL;
+    char *buffCpy = NULL;
+
+    if (!buff) return INV_CARD;
+    buffCpy = malloc(sizeof(char) * (strlen(buff) + 1));
+    strncpy(buffCpy, buff, strlen(buff) + 1);
+    ptr = strstr(upperCaseStr(buffCpy), toCmp);
+    if(ptr != NULL) {
+        if(strcmp(upperCaseStr(ptr), toCmp) != 0) {
+            free(buffCpy);
+            return INV_CARD;
+        }
+    }
+    else {
+        if(DEBUG) {printf("null buff\n");}
+        free(buffCpy);
+        return INV_CARD;
+    }
+    free(buffCpy);
     return OK;
 }
 
@@ -498,12 +561,13 @@ char *getGroup(char *token) {
     char *toReturn;
     char *group;
     char *val;
-
+    char *sc;
 
     val = strchr(token, ':');
     group = strchr(token, '.');
+    sc = strchr(token, ';');
 
-    if(val == NULL || group > val || group == NULL) {
+    if(val == NULL || group == NULL || group > val || group > sc) {
         toReturn = malloc(sizeof(char));
         strcpy(toReturn, "\0");
         return toReturn;
@@ -623,13 +687,17 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
 
     fp = fopen(fileName, "r");
 
+    if(*newCardObject != NULL) {
+        free(*newCardObject);
+        *newCardObject = NULL;
+    }
+
     *newCardObject = malloc(sizeof(Card));
     (*newCardObject)->optionalProperties = initializeList(&printProperty, &deleteProperty, &compareProperties);
     (*newCardObject)->birthday = NULL;
     (*newCardObject)->anniversary = NULL;
     (*newCardObject)->fn = NULL;
     if(fileCheck(fileName, fp) != OK) {
-        fclose(fp);
         deleteCard(*newCardObject);
         *newCardObject = NULL;
         newCardObject = NULL;
@@ -643,6 +711,7 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
         deleteCard(*newCardObject);
         *newCardObject = NULL;
         newCardObject = NULL;
+        if(DEBUG) {printf("4\n");}
         return INV_PROP;    
     }
     buffCpy = malloc(sizeof(char) * (strlen(buffer) + 1));
@@ -726,7 +795,38 @@ char* printCard(const Card* obj) {
 }
 
 char* printError(VCardErrorCode err) {
-    return NULL;
+    char *toReturn;
+
+    switch(err) {
+        case 0:
+            toReturn = malloc(sizeof(char) * (strlen("OK\0") + 1) );
+            strcpy(toReturn, "OK\0");
+            break;
+        case 1:
+            toReturn = malloc(sizeof(char) * (strlen("Invalid file\0") + 1) );
+            strcpy(toReturn, "Invalid file\0");
+            break;
+        case 2:
+            toReturn = malloc(sizeof(char) * (strlen("Invalid card\0")+1));
+            strcpy(toReturn, "Invalid card\0");
+            break;
+        case 3:
+            toReturn = malloc(sizeof(char) * (strlen("Invalid property\0")+1));
+            strcpy(toReturn, "Invalid property\0");
+            break;     
+        case 4:
+            toReturn = malloc(sizeof(char) * (strlen("Write Error\0")+1));
+            strcpy(toReturn, "Write Error\0");
+            break;
+        case 5:
+            toReturn = malloc(sizeof(char) * (strlen("Invalid Error Code\0")+1));
+            strcpy(toReturn, "Invalid Error Code\0");
+            break;
+        default:
+            toReturn = malloc(sizeof(char) * strlen("what\0"));
+            strcpy(toReturn, "what\0");  
+    }
+    return toReturn;
 }
 
 void deleteProperty(void* toBeDeleted) {
@@ -948,7 +1048,25 @@ void deleteDate(void* toBeDeleted) {
 }
 
 int compareDates(const void* first,const void* second) {
-    return 0;
+    DateTime *a;
+    DateTime *b;
+
+    if(first == NULL || second == NULL) {
+        return -1;
+    }
+
+    a = (DateTime *)first;
+    b = (DateTime *)second;
+
+    if(a->isText == true && b->isText) {
+        return strcmp(a->text, b->text);
+    }
+    else if(a->isText == false && b->isText == false) {
+        if(strcmp(a->date, b->date) == 0 && strcmp(a->time, b->time) == 0) {
+            return 0;
+        }
+    }
+    return -1;
 }
 
 char* printDate(void* toBePrinted) {
