@@ -1,7 +1,7 @@
 #include "parserHelper.h"
 #include <ctype.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 char* unfold(FILE *fp) {
     char *buff;
@@ -21,14 +21,19 @@ char* unfold(FILE *fp) {
         buff[i] = fgetc(fp);
         if(i > 1) {
             if((buff[i] == ' ' || buff[i] == (char)9 ) && buff[i - 1] == '\n' && buff[i - 2] == '\r') {
-                i = i - 3;
+                i -= 3;
                 fileLen -= 3;
+            }
+
+            if(buff[i] == '\\') {
+                i -= 1;
+                fileLen -= 1;
             }
         }
     }
 
     buff[fileLen] = '\0';
-    
+   /* 
     for(int i = 0; i < fileLen - 1; i++) {
         if(buff[i] == '\r') {
             if(buff[i+1] == '\n') {
@@ -41,7 +46,7 @@ char* unfold(FILE *fp) {
             }
         }
     }
-
+    */
     return buff;
 }
 
@@ -61,7 +66,7 @@ char *myStrChr(char *a, int c) {
     }
 
     return NULL;
-    
+
 }
 
 VCardErrorCode fileCheck(char *fileName, FILE *fp) {
@@ -220,7 +225,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
                     newDate->UTC = false;
                 }
 
-                tPos = strchr(lVal, 'T');
+                tPos = myStrChr(lVal, 'T');
                 if(tPos == NULL) {
                     strcpy(newDate->date, lVal);
                     strcpy(newDate->time, "\0");
@@ -313,7 +318,7 @@ void insertAllParams(List *parList, char *lParam) {
         insertParam(parList, lParam);
     }
     else {
-        endPos = strchr(lParam, ';');
+        endPos = myStrChr(lParam, ';');
         currPos = lParam;
         while(endPos != NULL) {
             currParam = malloc(sizeof(char) * (endPos - currPos + 1));
@@ -323,7 +328,7 @@ void insertAllParams(List *parList, char *lParam) {
             free(currParam);
             currPos = endPos + 1;
             endPos = NULL;
-            endPos = strchr(currPos, ';');
+            endPos = myStrChr(currPos, ';');
         }
         endPos = lParam + strlen(lParam);
         currParam = malloc(sizeof(char) * (endPos - currPos + 1));
@@ -345,7 +350,7 @@ void insertAllValues(List *valList, char *lVal) {
         insertValue(valList, lVal);
     }
     else {
-        endPos = strchr(lVal, ';');
+        endPos = myStrChr(lVal, ';');
         currPos = lVal;
         while(endPos != NULL) {
             currVal = malloc(sizeof(char) * (endPos - currPos + 1));
@@ -355,7 +360,7 @@ void insertAllValues(List *valList, char *lVal) {
             free(currVal);
             currPos = endPos + 1;
             endPos = NULL;
-            endPos = strchr(currPos, ';');
+            endPos = myStrChr(currPos, ';');
         }
         endPos = lVal + strlen(lVal);
         currVal = malloc(sizeof(char) * (endPos - currPos + 1));
@@ -395,8 +400,8 @@ void insertParam(List *parList, char *par) {
         return;
     }
 
-    equalSign = strchr(par, '=');
-    end = strchr(par, '\0');
+    equalSign = myStrChr(par, '=');
+    end = myStrChr(par, '\0');
 
     if(equalSign == NULL) {
         toInsert = malloc(sizeof(Parameter) + sizeof(char));
@@ -585,9 +590,9 @@ char *getGroup(char *token) {
     char *val;
     char *sc;
 
-    val = strchr(token, ':');
-    group = strchr(token, '.');
-    sc = strchr(token, ';');
+    val = myStrChr(token, ':');
+    group = myStrChr(token, '.');
+    sc = myStrChr(token, ';');
 
     if(val == NULL || group == NULL || group > val || group > sc) {
         toReturn = malloc(sizeof(char));
@@ -612,8 +617,8 @@ char *getProp(char *token) {
         return NULL;
     }
 
-    val = strchr(token, ':');
-    group = strchr(token, '.');
+    val = myStrChr(token, ':');
+    group = myStrChr(token, '.');
 
     if(val == NULL) {
         return NULL;
@@ -624,7 +629,7 @@ char *getProp(char *token) {
         strncpy(toReturn, group + 1, val - group - 1);
         toReturn[val - group - 1] = '\0';
         if(numSemiColons(toReturn) != 0) {
-            sc = strchr(toReturn, ';');
+            sc = myStrChr(toReturn, ';');
             *sc = '\0';
         }
         return toReturn;
@@ -634,7 +639,7 @@ char *getProp(char *token) {
         strncpy(toReturn, token, val - token);
         toReturn[val - token] = '\0';
         if(numSemiColons(toReturn) != 0) {
-            sc = strchr(toReturn, ';');
+            sc = myStrChr(toReturn, ';');
             *sc = '\0';
         }
         return toReturn;
@@ -647,8 +652,8 @@ char *getParam(char *token) {
     char *val = NULL;
     char *sc = NULL;
 
-    val = strchr(token, ':');
-    group = strchr(token, '.');
+    val = myStrChr(token, ':');
+    group = myStrChr(token, '.');
 
     if(group != NULL && group < val) {
         toReturn = malloc(sizeof(char) * (val - group + 1));
@@ -659,7 +664,7 @@ char *getParam(char *token) {
             return toReturn;
         }
         else {
-            sc = strchr(toReturn, ';');
+            sc = myStrChr(toReturn, ';');
             sc++;
             memmove(toReturn, toReturn + (sc - toReturn), strlen(toReturn) - (sc - toReturn));
             toReturn[strlen(toReturn) - (sc - toReturn)] = '\0';
@@ -675,7 +680,7 @@ char *getParam(char *token) {
             return toReturn;
         }
         else {
-            sc = strchr(toReturn, ';');
+            sc = myStrChr(toReturn, ';');
             sc++;
             memmove(toReturn, toReturn + (sc - toReturn), strlen(toReturn) - (sc - toReturn));
             toReturn[strlen(toReturn) - (sc - toReturn)] = '\0';
@@ -689,7 +694,7 @@ char *getValue(char *token) {
     char *val;
     char *end;
 
-    val = strchr(token, ':');
+    val = myStrChr(token, ':');
     end = token + strlen(token);
 
     toReturn = malloc(sizeof(char) *( end - val));
