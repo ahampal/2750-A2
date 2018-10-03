@@ -27,5 +27,6 @@ VCardErrorCode beginBuff(char *buff);
 char *nextLine(char *buff);
 VCardErrorCode endCheck(char *a);
 char *myStrChr(char *a, int c);
+VCardErrorCode dateCheck(char *a);
 
 #endif

@@ -1,7 +1,7 @@
 #include "parserHelper.h"
 #include <ctype.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 char* unfold(FILE *fp) {
     char *buff;
@@ -33,7 +33,7 @@ char* unfold(FILE *fp) {
     }
 
     buff[fileLen] = '\0';
-   /* 
+
     for(int i = 0; i < fileLen - 1; i++) {
         if(buff[i] == '\r') {
             if(buff[i+1] == '\n') {
@@ -46,7 +46,7 @@ char* unfold(FILE *fp) {
             }
         }
     }
-    */
+
     return buff;
 }
 
@@ -212,7 +212,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
                 insertBack((*newCardObject)->optionalProperties, newProp);
             }
         }
-        else if(strcmp(upperCaseStr(lProp), "BDAY") == 0 || strcmp(upperCaseStr(lProp), "ANNIVERSARY") == 0) {
+        else if( (strcmp(upperCaseStr(lProp), "BDAY") == 0 && ((*newCardObject)->birthday == NULL)) || ( ((*newCardObject)->anniversary == NULL ) && strcmp(upperCaseStr(lProp), "ANNIVERSARY") == 0 ) )  {
             deleteProperty(newProp);
             newDate = malloc( sizeof(DateTime) + ( (strlen(lVal) + 1) *sizeof(char) ) );
             if(strstr(lParam, "VALUE=text") == NULL) {
@@ -249,7 +249,16 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
                 strcpy(newDate->date, "\0");
                 strcpy(newDate->time, "\0");
             }
-            
+
+            if(newDate->isText == false) {
+                if(dateCheck(lVal) != OK) {
+                    freeLine(&lGroup, &lProp, &lParam, &lVal);
+                    deleteDate(newDate);
+                    free(buffCpy);
+                    return INV_PROP;
+                }
+            }
+
             if(strcmp(upperCaseStr(lProp), "BDAY") == 0) {
                 (*newCardObject)->birthday = newDate;
             }
@@ -290,6 +299,33 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         return INV_CARD;
     }
     free(buffCpy);
+    return OK;
+}
+
+VCardErrorCode dateCheck(char *a) {
+    int flag;
+
+    if(a == NULL) {
+        return INV_PROP;
+    }
+    
+    flag = 0;
+
+    for(int i = 0; a[i] != '\0'; i++) {
+        if(a[strlen(a) - 1] == 'Z') {
+            break;
+        }
+        if(isdigit(a[i]) == 0 && a[i] != '-') {
+            if(a[i] == 'T' && flag == 0) {
+                flag = 1;
+                continue;
+            }
+            else {
+                return INV_PROP;
+            }
+        }
+    }
+
     return OK;
 }
 
