@@ -132,7 +132,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
     token = strtok(NULL, "\r\n");
 
     //parse every content line until end of vcard
-    while(token != NULL) {
+    while(token != NULL && strncmp(token, "END:VCARD", 10) != 0) {
         if(strlen(token) > 998) {
             free(buffCpy);
             return INV_PROP;
@@ -220,6 +220,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
                 strcpy(newDate->text, "\0");
                 if(lVal[strlen(lVal) - 1] == 'Z') {
                     newDate->UTC = true;
+                    lVal[strlen(lVal) - 1] = '\0';
                 }
                 else {
                     newDate->UTC = false;
@@ -232,13 +233,13 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
                 }
 
                 else if(tPos == lVal) {
-                    strcpy(newDate->time, lVal);
+                    strncpy(newDate->time, lVal + 1, strlen(lVal)- 1);
                     strcpy(newDate->date, "\0");
                 }
                 else {
-                    strncpy(newDate->date, lVal, tPos-lVal+1);
+                    strncpy(newDate->date, lVal, tPos-lVal + 1);
                     newDate->date[tPos-lVal] = '\0';
-                    strcpy(newDate->time, tPos);
+                    strcpy(newDate->time, tPos + 1);
                 }
             }
             else {
@@ -502,6 +503,8 @@ VCardErrorCode checkProp(char *lProp) {
         if(DEBUG) {printf("1\n");}
         return INV_PROP;
     }
+    
+    if(strlen(lProp) < 1) return INV_PROP;
 
     /*
     int flag;
@@ -529,10 +532,18 @@ VCardErrorCode checkProp(char *lProp) {
 }
 
 VCardErrorCode checkParam(char *lParam) {
+	char *equalSign = NULL;
+	if(lParam == NULL) return OK;
+	if(strlen(lParam) == 0) return OK;
+	equalSign = myStrChr(lParam, '=');
+	if(equalSign == NULL) return INV_PROP;
+	if(strlen(equalSign + 1) < 1) return INV_PROP;
     return OK;
 }
 
 VCardErrorCode checkValue(char *lVal) {
+	if(lVal == NULL) return INV_PROP;
+	if(strlen(lVal) < 1) return INV_PROP;
     return OK;
 }
 
@@ -558,7 +569,7 @@ VCardErrorCode beginBuff(char *buff) {
 
     if (!buff) return INV_CARD;
 
-    for(int i = 0; toCmp[i] != '\n'; i++) {
+    for(int i = 0; i < 26; i++) {
         if(toCmp[i] != toupper(buff[i])) {
             return INV_CARD;
         }
