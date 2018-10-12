@@ -9,7 +9,7 @@
                 "type": "cppdbg",
                 "request": "launch",
                 "program": "/mnt/c/Users/Amit/Documents/Code/2750-A1/assign1/bin/testAPI",
-                "args": ["testCard.vcf"],
+                "args": ["test1.vcf"],
                 "stopAtEntry": true,
                 "cwd": "/mnt/c/Users/Amit/Documents/Code/2750-A1/assign1/test_files/",
                 "externalConsole": true,

@@ -24,7 +24,7 @@ testBuild:
 
 test:
 	cd bin; \
-	  valgrind --leak-check=full --track-origins=yes ./testAPI ../test_files/testCard.vcf
+	  valgrind --leak-check=full --track-origins=yes ./testAPI ../test_files/test1.vcf
 	  cd ..;
 
 all: list parser testBuild test
