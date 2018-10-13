@@ -12,6 +12,9 @@ VCardErrorCode writeCard(const char* fileName, const Card* obj) {
     FILE *fp = NULL;
     char *fNameCpy = NULL;
     char *line = NULL;
+    ListIterator propIter;
+    void *node;
+    Property *tmp;
 
     fp = fopen(fileName, "w");
     fNameCpy = malloc(sizeof(char) * (strlen(fileName) + 1));
@@ -29,6 +32,25 @@ VCardErrorCode writeCard(const char* fileName, const Card* obj) {
     line = printProperty(obj->fn);
     fprintf(fp, "%s\r\n", line);
     free(line);
+
+    propIter = createIterator(obj->optionalProperties);
+    while((node = nextElement(&propIter)) != NULL) {
+        tmp = (Property *)node;
+        line = printProperty(tmp);
+        fprintf(fp, "%s\r\n", line);
+        free(line);
+    }
+
+    fprintf(fp, "BDAY:");
+    line = printDate(obj->birthday);
+    fprintf(fp, "%s\r\n", line);
+    free(line);
+
+    fprintf(fp, "ANNIVERSARY:");
+    line = printDate(obj->anniversary);
+    fprintf(fp, "%s\r\n", line);
+    free(line);
+
     fprintf(fp, "END:VCARD\r\n");
 
     fclose(fp);

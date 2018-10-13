@@ -1,6 +1,6 @@
 #include "VCardParser.h"
 #define CTEST 0
-#define PTEST 1
+#define PTEST 0
 #define WTEST 1
 
 int main(int argc, char **argv) {
