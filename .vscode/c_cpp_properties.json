@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "C:/Users/Amit/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/lib/gcc/x86_64-linux-gnu/7/include",
                 "C:/Users/Amit/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include",
-                "C:/Users/Amit/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu"
+                "C:/Users/Amit/AppData/Local/Packages/CanonicalGroupLimited.Ubuntu18.04onWindows_79rhkp1fndgsc/LocalState/rootfs/usr/include/x86_64-linux-gnu",
+                "${workspaceFolder}/include"
             ],
             "defines": [
                 "_DEBUG",
