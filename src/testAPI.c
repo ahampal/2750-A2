@@ -3,6 +3,7 @@
 #define CTEST 1
 #define PTEST 0
 #define WTEST 1
+#define VTEST 1
 
 int main(int argc, char **argv) {
     Card *refCard;
@@ -57,6 +58,20 @@ int main(int argc, char **argv) {
         }
         printf(RESET);
         deleteCard(writtenCard);
+    }
+
+    //validateCard Test
+    retVal = validateCard(refCard);
+    retString = printError(retVal);
+    if(VTEST) {
+        if(retVal != OK) {
+            printf(RED);
+        }
+        else {
+            printf(GRN);
+        }
+        printf("validateCard Status: %s\n", retString);
+        printf(RESET);
     }
     free(retString);
     retString = NULL;
