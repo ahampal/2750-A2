@@ -30,5 +30,7 @@ char *myStrChr(char *a, int c);
 VCardErrorCode dateCheck(char *a);
 VCardErrorCode checkPropStruct(Property *a);
 VCardErrorCode checkPropName(char *a);
+VCardErrorCode checkPropVal(List *a);
+VCardErrorCode checkParamList(List *a);
 
 #endif

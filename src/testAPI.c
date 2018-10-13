@@ -7,7 +7,7 @@
 
 int main(int argc, char **argv) {
     Card *refCard;
-    Card *writtenCard;
+    Card *writeOne;
     VCardErrorCode retVal;
     char *retString;
     char *printedCard = NULL;
@@ -47,8 +47,10 @@ int main(int argc, char **argv) {
         }
         printf("writeCard Status: %s\n", retString);
         printf(RESET);
-        retVal = createCard("writeOne.vcf", &writtenCard);
-        if(_tObjEqual(refCard,writtenCard)) {
+        retVal = createCard("writeOne.vcf", &writeOne);
+        if(retVal != OK) printf(RED"writeOne createCard status: %d\n"RESET, retVal);
+        else
+        if(_tObjEqual(refCard,writeOne)) {
             printf(GRN);
             printf("writeOne.vcf and %s are the same file\n", argv[argc-1]);
         }
@@ -57,7 +59,7 @@ int main(int argc, char **argv) {
             printf("writeOne.vcf and %s are not the same file\n", argv[argc-1]);
         }
         printf(RESET);
-        deleteCard(writtenCard);
+        deleteCard(writeOne);
     }
     free(retString);
     retString = NULL;
@@ -77,7 +79,7 @@ int main(int argc, char **argv) {
     }
     free(retString);
     retString = NULL;
-    
+
     deleteCard(refCard);
     return 0;
 }

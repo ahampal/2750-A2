@@ -85,7 +85,43 @@ VCardErrorCode checkPropStruct(Property *a) {
     if(retVal != OK) return retVal;
     free(cmpStr);
 
+    retVal = checkPropVal(toCheck->values);
+    if(retVal != OK) return retVal;
+
+    retVal = checkParamList(toCheck->parameters);
+    if(retVal != OK) return retVal;
+
     return OK; 
+}
+
+VCardErrorCode checkParamList(List *a) {
+    Parameter *currParam;
+    void *node;
+    ListIterator paramListIter;
+
+    paramListIter = createIterator(a);
+    while( (node = nextElement(&paramListIter)) != NULL) {
+        currParam = (Parameter *)node;
+        if(currParam == NULL) return INV_PROP;
+        if(strcmp(currParam->name, "") == 0) return INV_PROP;
+        if(strcmp(currParam->value, "") == 0) return INV_PROP;
+    }
+
+    return OK;
+}
+
+VCardErrorCode checkPropVal(List *a) {
+    char *currVal;
+    void *node;
+    ListIterator valListIter;
+
+    valListIter = createIterator(a);
+    while( (node = nextElement(&valListIter)) != NULL ) {
+        currVal = (char *)node;
+        if(currVal == NULL) return INV_PROP;
+    }
+
+    return OK;
 }
 
 VCardErrorCode checkPropName(char *a) {
@@ -119,7 +155,6 @@ VCardErrorCode checkDTStruct(DateTime *a) {
 
     if(toCheck->isText == true && strcmp(toCheck->date, "") != 0) return INV_DT;
     if(toCheck->isText == true && strcmp(toCheck->time, "") != 0) return INV_DT;
-    printf("%s", toCheck->text);
     if(toCheck->isText == false && strcmp(toCheck->text, "") != 0) return INV_DT;
     if(toCheck->isText == false && toCheck->UTC == true) return INV_DT;
 
