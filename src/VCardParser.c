@@ -1000,12 +1000,16 @@ char* printError(VCardErrorCode err) {
             strcpy(toReturn, "Invalid property\0");
             break;     
         case 4:
+            toReturn = malloc(sizeof(char) * (strlen("Invalid Date-Time\0") + 1));
+            strcpy(toReturn, "Invalid Date-Time\0");
+            break;
+        case 5:
             toReturn = malloc(sizeof(char) * (strlen("Write Error\0")+1));
             strcpy(toReturn, "Write Error\0");
             break;
-        case 5:
-            toReturn = malloc(sizeof(char) * (strlen("Invalid Error Code\0")+1));
-            strcpy(toReturn, "Invalid Error Code\0");
+        case 6:
+            toReturn = malloc(sizeof(char) * (strlen("Other Error\0")+1));
+            strcpy(toReturn, "Other Error\0");
             break;
         default:
             toReturn = malloc(sizeof(char) * strlen("what\0"));
