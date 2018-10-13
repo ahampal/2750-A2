@@ -2,7 +2,43 @@
 #include <ctype.h>
 
 #define DEBUG 0
+//A2 functions
+VCardErrorCode writeCard(const char* fileName, const Card* obj) {
 
+    if(fileName == NULL) return WRITE_ERROR;
+    if(obj == NULL) return WRITE_ERROR;
+    if(strlen(fileName) < 1) return WRITE_ERROR;
+
+    FILE *fp = NULL;
+    char *fNameCpy = NULL;
+
+    fp = fopen(fileName, "w");
+    fNameCpy = malloc(sizeof(char) * (strlen(fileName) + 1));
+    strncpy(fNameCpy, fileName, strlen(fileName));
+    fNameCpy[strlen(fileName)] = '\0';
+    if(fileCheck(fNameCpy, fp) != OK) {
+        free(fNameCpy);
+        fNameCpy = NULL;
+         return WRITE_ERROR;
+    }
+    free(fNameCpy);
+    fNameCpy = NULL;
+    
+    fprintf(fp, "BEGIN:VCARD\r\nVERSION:4.0\r\n");
+    fprintf(fp, "END:VCARD\r\n");
+
+    fclose(fp);
+    return OK;
+}
+
+VCardErrorCode validateCard(const Card* obj) {
+
+    if(obj == NULL) return INV_CARD;
+
+    return OK;
+}
+
+//A1 functions
 char* unfold(FILE *fp) {
     char *buff;
     int fileLen;
