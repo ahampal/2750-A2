@@ -66,6 +66,7 @@ VCardErrorCode checkPropStruct(Property *a) {
 
     Property *toCheck = NULL;
     char *cmpStr = NULL;
+    VCardErrorCode retVal;
 
     toCheck = (Property *)a;
 
@@ -80,14 +81,31 @@ VCardErrorCode checkPropStruct(Property *a) {
     strcpy(cmpStr, toCheck->name);
     strcat(cmpStr, "\0");
     cmpStr = upperCaseStr(cmpStr);
-
-    if(strcmp(cmpStr, "VERSION") == 0) return INV_CARD;
-    if(strcmp(cmpStr, "BDAY") == 0) return INV_DT;
-    if(strcmp(cmpStr, "ANNIVERSARY") == 0) return INV_DT;
-
+    retVal = checkPropName(cmpStr);
+    if(retVal != OK) return retVal;
     free(cmpStr);
 
     return OK; 
+}
+
+VCardErrorCode checkPropName(char *a) {
+    char name[35][15]  = {"SOURCE\0", "KIND\0" , "FN\0" , "N\0" , "NICKNAME\0"
+        , "PHOTO\0" , "BDAY\0" , "ANNIVERSARY\0" , "GENDER\0" , "ADR\0" , "TEL\0"
+        , "EMAIL\0" , "IMPP\0" , "LANG\0" , "TZ\0" , "GEO\0" , "TITLE\0" , "ROLE\0"
+        , "LOGO" , "ORG" , "MEMBER" , "RELATED" , "CATEGORIES"
+        , "NOTE\0" , "PRODID\0" , "REV\0" , "SOUND\0" , "UID\0" , "CLIENTPIDMAP\0"
+        , "URL\0" , "KEY\0" , "FBURL\0" , "CALADRURI\0" , "CALURI\0" , "XML\0"};
+
+    if(a == NULL) return INV_PROP;
+    if(strcmp(a, "VERSION") == 0) return INV_CARD;
+    if(strcmp(a, "BDAY") == 0) return INV_DT;
+    if(strcmp(a, "ANNIVERSARY") == 0) return INV_DT;
+
+    for(int i = 0; i < 35; i++) {
+        if(strcmp(name[i], a) == 0) return OK;
+    }
+
+    return INV_PROP;
 }
 
 VCardErrorCode checkDTStruct(DateTime *a) {
@@ -114,6 +132,8 @@ VCardErrorCode checkDTStruct(DateTime *a) {
 
 }
 
+
+
 VCardErrorCode validateCard(const Card* obj) {
 
     if(obj == NULL) return INV_CARD;
@@ -125,7 +145,7 @@ VCardErrorCode validateCard(const Card* obj) {
     void *node;
     Property *currProp;
 
-    //validate struct implementation constraints
+    //validate struct implementation constraints and vCard Specifications
     retVal = checkPropStruct(obj->fn);
     if(retVal != OK) return retVal;
 
@@ -141,7 +161,7 @@ VCardErrorCode validateCard(const Card* obj) {
 
     retVal = checkDTStruct(obj->anniversary);
     if(retVal != OK) return retVal;
-
+    
     return OK;
 }
 
