@@ -86,8 +86,8 @@ VCardErrorCode checkPropStruct(Property *a) {
     strcat(cmpStr, "\0");
     cmpStr = upperCaseStr(cmpStr);
     retVal = checkPropName(cmpStr);
-    if(retVal != OK) return retVal;
     free(cmpStr);
+    if(retVal != OK) return retVal;
 
     retVal = checkPropVal(toCheck->values);
     if(retVal != OK) return retVal;
@@ -144,7 +144,6 @@ VCardErrorCode checkPropName(char *a) {
     for(int i = 0; i < 35; i++) {
         if(strcmp(name[i], a) == 0) return OK;
     }
-
     return INV_PROP;
 }
 
@@ -868,12 +867,13 @@ char *getProp(char *token) {
 
     val = myStrChr(token, ':');
     group = myStrChr(token, '.');
+    sc = myStrChr(token, ';');
 
     if(val == NULL) {
         return NULL;
     }
 
-    if(group != NULL && group < val) {
+    if(group != NULL && group < val && group < sc) {
         toReturn = malloc(sizeof(char) * (val - group + 1));
         strncpy(toReturn, group + 1, val - group - 1);
         toReturn[val - group - 1] = '\0';
@@ -903,8 +903,9 @@ char *getParam(char *token) {
 
     val = myStrChr(token, ':');
     group = myStrChr(token, '.');
+    sc = myStrChr(token, ';');
 
-    if(group != NULL && group < val) {
+    if(group != NULL && group < val && group < sc) {
         toReturn = malloc(sizeof(char) * (val - group + 1));
         strncpy(toReturn, group, val - group);
         toReturn[val - group] = '\0';
