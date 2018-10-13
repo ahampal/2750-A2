@@ -70,7 +70,7 @@ VCardErrorCode checkPropStruct(Property *a) {
     toCheck = (Property *)a;
 
     if(toCheck->name == NULL) return INV_PROP;
-    if(strlen(toCheck->name) == 0) return INV_PROP;
+    if(strcmp(toCheck->name, "") == 0) return INV_PROP;
     if(toCheck->group == NULL) return INV_PROP;
     if(toCheck->parameters == NULL) return INV_PROP;
     if(toCheck->values == NULL) return INV_PROP;
@@ -88,6 +88,30 @@ VCardErrorCode checkPropStruct(Property *a) {
     free(cmpStr);
 
     return OK; 
+}
+
+VCardErrorCode checkDTStruct(DateTime *a) {
+
+    if(a == NULL) return OK;
+    if(a->text == NULL) return INV_DT;
+    if(a->time == NULL) return INV_DT;
+
+    DateTime *toCheck = NULL;
+    toCheck = (DateTime *)a;
+
+    if(toCheck->isText == true && strcmp(toCheck->date, "") != 0) return INV_DT;
+    if(toCheck->isText == true && strcmp(toCheck->time, "") != 0) return INV_DT;
+    printf("%s", toCheck->text);
+    if(toCheck->isText == false && strcmp(toCheck->text, "") != 0) return INV_DT;
+    if(toCheck->isText == false && toCheck->UTC == true) return INV_DT;
+
+    if(toCheck->isText == false) {
+        if(dateCheck(toCheck->date) != OK) return INV_DT;
+        if(dateCheck(toCheck->time) != OK) return INV_DT;
+    }
+
+    return OK;
+
 }
 
 VCardErrorCode validateCard(const Card* obj) {
@@ -111,6 +135,12 @@ VCardErrorCode validateCard(const Card* obj) {
         retVal = checkPropStruct(currProp);
         if(retVal != OK) return retVal;
     }
+
+    retVal = checkDTStruct(obj->birthday);
+    if(retVal != OK) return retVal;
+
+    retVal = checkDTStruct(obj->anniversary);
+    if(retVal != OK) return retVal;
 
     return OK;
 }
@@ -352,7 +382,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
                 else {
                     strncpy(newDate->date, lVal, tPos-lVal + 1);
                     newDate->date[tPos-lVal] = '\0';
-                    strcpy(newDate->time, tPos + 1);
+                    strncpy(newDate->time, tPos + 1, 7);
                 }
             }
             else {
