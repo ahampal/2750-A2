@@ -8,7 +8,7 @@
 
 #include "LinkedListAPI.h"
 
-typedef enum ers {OK, INV_FILE, INV_CARD, INV_PROP, WRITE_ERROR, OTHER_ERROR } VCardErrorCode;
+typedef enum ers {OK, INV_FILE, INV_CARD, INV_PROP, INV_DT, WRITE_ERROR, OTHER_ERROR } VCardErrorCode;
 
 /*	Represents vCard Date-time, needed for date-related properties, i.e. birthday and anniversary
 	We assume that the type of date-related parameters is either unspecified or is "date-and-or-time"
@@ -100,11 +100,37 @@ typedef struct vCard {
 
 } Card;
 
-// ************* Card parser fucntions - MUST be implemented ***************
+// ************* Card parser functions - MUST be implemented ***************
 VCardErrorCode createCard(char* fileName, Card** newCardObject);
 void deleteCard(Card* obj);
 char* printCard(const Card* obj);
 char* printError(VCardErrorCode err);
+// *************************************************************************
+
+// ************* Assignment 2 functions - MUST be implemented ***************
+
+/** Function to writing a Card object into a file in iCard format.
+ *@pre Card object exists, and is not NULL.
+        fileName is not NULL, has the correct extension
+ *@post Card has not been modified in any way, and a file representing the
+        Card contents in vCard format has been created
+ *@return the error code indicating success or the error encountered when traversing the Card
+ *@param obj - a pointer to a Card struct
+		 fileName - the name of the output file
+ **/
+VCardErrorCode writeCard(const char* fileName, const Card* obj);
+
+
+
+/** Function to writing a Card object into a file in iCard format.
+ *@pre Card object exists, and is not NULL.
+ *@post Card has not been modified in any way, and a file representing the
+        Card contents in vCard format has been created
+ *@return the error code indicating success or the error encountered when validating the Card
+ *@param obj - a pointer to a Card struct
+ **/
+VCardErrorCode validateCard(const Card* obj);
+
 // *************************************************************************
 
 // ************* List helper functions - MUST be implemented *************** 
