@@ -59,6 +59,8 @@ int main(int argc, char **argv) {
         printf(RESET);
         deleteCard(writtenCard);
     }
+    free(retString);
+    retString = NULL;
 
     //validateCard Test
     retVal = validateCard(refCard);
@@ -75,6 +77,7 @@ int main(int argc, char **argv) {
     }
     free(retString);
     retString = NULL;
+    
     deleteCard(refCard);
     return 0;
 }
