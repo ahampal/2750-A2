@@ -11,6 +11,7 @@ VCardErrorCode writeCard(const char* fileName, const Card* obj) {
 
     FILE *fp = NULL;
     char *fNameCpy = NULL;
+    char *line = NULL;
 
     fp = fopen(fileName, "w");
     fNameCpy = malloc(sizeof(char) * (strlen(fileName) + 1));
@@ -19,12 +20,15 @@ VCardErrorCode writeCard(const char* fileName, const Card* obj) {
     if(fileCheck(fNameCpy, fp) != OK) {
         free(fNameCpy);
         fNameCpy = NULL;
-         return WRITE_ERROR;
+        return WRITE_ERROR;
     }
     free(fNameCpy);
     fNameCpy = NULL;
     
     fprintf(fp, "BEGIN:VCARD\r\nVERSION:4.0\r\n");
+    line = printProperty(obj->fn);
+    fprintf(fp, "%s\r\n", line);
+    free(line);
     fprintf(fp, "END:VCARD\r\n");
 
     fclose(fp);
@@ -866,8 +870,9 @@ char* printCard(const Card* obj) {
     }
 
     str = printProperty(obj->fn);
-    toReturn = malloc( (sizeof(char) * (strlen(str) + 1)));
+    toReturn = malloc( (sizeof(char) * (strlen(str) + 2)));
     strcpy(toReturn, str);
+    strcat(toReturn, "\n");
     strcat(toReturn, "\0");
     free(str);
 
@@ -875,24 +880,26 @@ char* printCard(const Card* obj) {
     while((node = nextElement(&propIter)) != NULL) {
         tmp = (Property *)node;
         str = printProperty(tmp);
-        toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 1)));
+        toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 2)));
         strcat(toReturn, str);
+        strcat(toReturn, "\n");
         strcat(toReturn, "\0");
         free(str);
     }
 
-    toReturn = realloc(toReturn, (sizeof(char) *(strlen(toReturn) + 2)));
-    strcat(toReturn, "\n");
-
     str = printDate(obj->birthday);
-    toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 1)));
+    toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 8)));
+    strcat(toReturn, "BDAY:");
     strcat(toReturn, str);
+    strcat(toReturn, "\n");
     strcat(toReturn, "\0");
     free(str);
 
     str = printDate(obj->anniversary);
-    toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 1)));
+    toReturn = realloc(toReturn, (sizeof(char) * (strlen(toReturn) + strlen(str) + 15)));
+    strcat(toReturn, "ANNIVERSARY:");
     strcat(toReturn, str);
+    strcat(toReturn, "\n");
     strcat(toReturn, "\0");
     free(str);
 
@@ -1000,9 +1007,9 @@ char* printProperty(void* toBePrinted) {
 
     toReturn = malloc(sizeof(char) * (strlen(a->group) + strlen(a->name) + 3));
     strcpy(toReturn, a->group);
-    strcat(toReturn, "\n");
+    if(strlen(a->group) > 0) strcat(toReturn, ".");
     strcat(toReturn, a->name);
-    strcat(toReturn, "\n");
+    if(getLength(a->parameters) == 0) strcat(toReturn, ":");
     strcat(toReturn, "\0");
 
     paramIter = createIterator(a->parameters);
@@ -1013,10 +1020,14 @@ char* printProperty(void* toBePrinted) {
         tmp = (Parameter *)node;
         
         str = a->parameters->printData(tmp);
-        toReturn = realloc(toReturn, strlen(toReturn) + strlen(str) + 1);
+        toReturn = realloc(toReturn, strlen(toReturn) + strlen(str) + 2);
         strcat(toReturn, str);
         strcat(toReturn, "\0");
         free(str);
+    }
+    if(getLength(a->parameters) != 0) {
+        strcat(toReturn, ":");
+        strcat(toReturn, "\0");
     }
 
     while((node = nextElement(&valueIter)) != NULL) {
@@ -1026,10 +1037,10 @@ char* printProperty(void* toBePrinted) {
         str = a->values->printData(tmp);
         toReturn = realloc(toReturn, strlen(toReturn) + strlen(str) + 2);
         strcat(toReturn, str);
-        strcat(toReturn, "\n");
+        strcat(toReturn, ";");
         strcat(toReturn, "\0");
     }
-
+    toReturn[strlen(toReturn) - 1] = '\0';
     return toReturn;
 }
 
@@ -1078,12 +1089,12 @@ char* printParameter(void* toBePrinted) {
     
     a = (Parameter *)toBePrinted;
 
-    toReturn = malloc(sizeof(char) * (204 + strlen(a->value)));
+    toReturn = malloc(sizeof(char) * (203 + strlen(a->value)));
 
-    strcpy(toReturn, a->name);
-    strcat(toReturn, "\n");
+    strcpy(toReturn, ";");
+    strcat(toReturn, a->name);
+    strcat(toReturn, "=");
     strcat(toReturn, a->value);
-    strcat(toReturn, "\n");
     strcat(toReturn, "\0");
 
     return toReturn;
@@ -1193,9 +1204,9 @@ char* printDate(void* toBePrinted) {
     else {
         toReturn = malloc(sizeof(char) *(strlen(a->date) + strlen(a->time) + 3));
         strcpy(toReturn, a->date);
-        strcat(toReturn, "\n");
+        if(strlen(a->time) != 0 ) strcat(toReturn, "T");
         strcat(toReturn, a->time);
-        strcat(toReturn, "\n");
+        if(a->UTC == true) strcat(toReturn, "Z");
         strcat(toReturn, "\0");
     }
     return toReturn;
