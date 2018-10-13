@@ -28,5 +28,6 @@ char *nextLine(char *buff);
 VCardErrorCode endCheck(char *a);
 char *myStrChr(char *a, int c);
 VCardErrorCode dateCheck(char *a);
+VCardErrorCode checkPropStruct(Property *a);
 
 #endif

@@ -1,6 +1,6 @@
 #include "CardTestUtilities.h"
 
-#define CTEST 0
+#define CTEST 1
 #define PTEST 0
 #define WTEST 1
 
@@ -14,7 +14,16 @@ int main(int argc, char **argv) {
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
     retString = printError(retVal);
-    if(CTEST) printf("createCard Status: %s\n", retString);
+    if(CTEST) {
+        if(retVal == OK) {
+            printf(GRN);
+        }
+        else {
+            printf(RED);
+        }
+        printf("createCard Status: %s\n", retString);
+        printf(RESET);
+    }
     free(retString);
     retString = NULL;
 

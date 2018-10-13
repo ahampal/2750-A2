@@ -19,14 +19,17 @@ parser:
 clean:
 	rm -f bin/*.o bin/*.a
 
-testBuild:
-	$(CC) $(CFLAGS) src/testAPI.c bin/VCardParser.a bin/LinkedListAPI.a -Iinclude -o bin/testAPI -g
+fullClean:
+	rm -f bin/*
 
-test:
+buildTest:
+	$(CC) $(CFLAGS) src/testAPI.c src/CardTestUtilities.c src/LinkedListAPI.c src/VCardParser.c src/TestHarness2.c -Iinclude -o bin/testAPI -g
+
+runTest: buildTest
 	cd bin; \
-	  valgrind --leak-check=full --track-origins=yes ./testAPI ../test_files/test1.vcf
+	  valgrind --show-leak-kinds=all --leak-check=full --track-origins=yes ./testAPI ../test_files/test1.vcf
 	  cd ..;
 
-all: list parser testBuild test
+all: list parser buildTest runTest fullClean
 
 
