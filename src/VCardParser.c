@@ -186,14 +186,12 @@ VCardErrorCode validateCard(const Card* obj) {
     //validate struct implementation constraints and vCard Specifications
     retVal = checkPropStruct(obj->fn);
     if(retVal != OK) return retVal;
-
     optionalPropIter = createIterator(obj->optionalProperties);
     while((node = nextElement(&optionalPropIter)) != NULL) {
         currProp = (Property *)node;
         retVal = checkPropStruct(currProp);
         if(retVal != OK) return retVal;
     }
-
     retVal = checkDTStruct(obj->birthday);
     if(retVal != OK) return retVal;
 
@@ -842,10 +840,19 @@ char *getGroup(char *token) {
     group = myStrChr(token, '.');
     sc = myStrChr(token, ';');
 
-    if(val == NULL || group == NULL || group > val || group > sc) {
-        toReturn = malloc(sizeof(char));
-        strcpy(toReturn, "\0");
-        return toReturn;
+    if(sc != NULL) {
+        if(val == NULL || group == NULL || group > val || group > sc) {
+            toReturn = malloc(sizeof(char));
+            strcpy(toReturn, "\0");
+            return toReturn;
+        }
+    }
+    else {
+        if(val == NULL || group == NULL || group > val) {
+            toReturn = malloc(sizeof(char));
+            strcpy(toReturn, "\0");
+            return toReturn;
+        }
     }
 
     toReturn = malloc(sizeof(char) * (val - token ));
@@ -873,25 +880,49 @@ char *getProp(char *token) {
         return NULL;
     }
 
-    if(group != NULL && group < val && group < sc) {
-        toReturn = malloc(sizeof(char) * (val - group + 1));
-        strncpy(toReturn, group + 1, val - group - 1);
-        toReturn[val - group - 1] = '\0';
-        if(numSemiColons(toReturn) != 0) {
-            sc = myStrChr(toReturn, ';');
-            *sc = '\0';
+    if(sc != NULL) {
+        if(group != NULL && group < val && group < sc) {
+            toReturn = malloc(sizeof(char) * (val - group + 1));
+            strncpy(toReturn, group + 1, val - group - 1);
+            toReturn[val - group - 1] = '\0';
+            if(numSemiColons(toReturn) != 0) {
+                sc = myStrChr(toReturn, ';');
+                *sc = '\0';
+            }
+            return toReturn;
         }
-        return toReturn;
+        else {
+            toReturn = malloc(sizeof(char) * (val - token + 1));
+            strncpy(toReturn, token, val - token);
+            toReturn[val - token] = '\0';
+            if(numSemiColons(toReturn) != 0) {
+                sc = myStrChr(toReturn, ';');
+                *sc = '\0';
+            }
+            return toReturn;
+        }
     }
     else {
-        toReturn = malloc(sizeof(char) * (val - token + 1));
-        strncpy(toReturn, token, val - token);
-        toReturn[val - token] = '\0';
-        if(numSemiColons(toReturn) != 0) {
-            sc = myStrChr(toReturn, ';');
-            *sc = '\0';
+        if(group != NULL && group < val) {
+            toReturn = malloc(sizeof(char) * (val - group + 1));
+            strncpy(toReturn, group + 1, val - group - 1);
+            toReturn[val - group - 1] = '\0';
+            if(numSemiColons(toReturn) != 0) {
+                sc = myStrChr(toReturn, ';');
+                *sc = '\0';
+            }
+            return toReturn;
         }
-        return toReturn;
+        else {
+            toReturn = malloc(sizeof(char) * (val - token + 1));
+            strncpy(toReturn, token, val - token);
+            toReturn[val - token] = '\0';
+            if(numSemiColons(toReturn) != 0) {
+                sc = myStrChr(toReturn, ';');
+                *sc = '\0';
+            }
+            return toReturn;
+        }
     }
 }
 
