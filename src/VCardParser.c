@@ -23,6 +23,7 @@ VCardErrorCode writeCard(const char* fileName, const Card* obj) {
     if(fileCheck(fNameCpy, fp) != OK) {
         free(fNameCpy);
         fNameCpy = NULL;
+        fclose(fp);
         return WRITE_ERROR;
     }
     free(fNameCpy);
@@ -57,9 +58,59 @@ VCardErrorCode writeCard(const char* fileName, const Card* obj) {
     return OK;
 }
 
+VCardErrorCode checkPropStruct(Property *a) {
+
+    if(a == NULL) {
+        return INV_PROP;
+    }
+
+    Property *toCheck = NULL;
+    char *cmpStr = NULL;
+
+    toCheck = (Property *)a;
+
+    if(toCheck->name == NULL) return INV_PROP;
+    if(strlen(toCheck->name) == 0) return INV_PROP;
+    if(toCheck->group == NULL) return INV_PROP;
+    if(toCheck->parameters == NULL) return INV_PROP;
+    if(toCheck->values == NULL) return INV_PROP;
+    if(getLength(toCheck->values) < 1) return INV_PROP;
+
+    cmpStr = malloc(sizeof(char) * (strlen(toCheck->name) + 1));
+    strcpy(cmpStr, toCheck->name);
+    strcat(cmpStr, "\0");
+    cmpStr = upperCaseStr(cmpStr);
+
+    if(strcmp(cmpStr, "VERSION") == 0) return INV_CARD;
+    if(strcmp(cmpStr, "BDAY") == 0) return INV_DT;
+    if(strcmp(cmpStr, "ANNIVERSARY") == 0) return INV_DT;
+
+    free(cmpStr);
+
+    return OK; 
+}
+
 VCardErrorCode validateCard(const Card* obj) {
 
     if(obj == NULL) return INV_CARD;
+    if(obj->fn == NULL) return INV_CARD;
+    if(obj->optionalProperties == NULL) return INV_CARD;
+
+    VCardErrorCode retVal;
+    ListIterator optionalPropIter;
+    void *node;
+    Property *currProp;
+
+    //validate struct implementation constraints
+    retVal = checkPropStruct(obj->fn);
+    if(retVal != OK) return retVal;
+
+    optionalPropIter = createIterator(obj->optionalProperties);
+    while((node = nextElement(&optionalPropIter)) != NULL) {
+        currProp = (Property *)node;
+        retVal = checkPropStruct(currProp);
+        if(retVal != OK) return retVal;
+    }
 
     return OK;
 }
