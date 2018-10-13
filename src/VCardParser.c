@@ -42,15 +42,19 @@ VCardErrorCode writeCard(const char* fileName, const Card* obj) {
         free(line);
     }
 
-    fprintf(fp, "BDAY:");
-    line = printDate(obj->birthday);
-    fprintf(fp, "%s\r\n", line);
-    free(line);
+    if(obj->birthday != NULL) {
+        fprintf(fp, "BDAY:");
+        line = printDate(obj->birthday);
+        fprintf(fp, "%s\r\n", line);
+        free(line);
+    }
 
-    fprintf(fp, "ANNIVERSARY:");
-    line = printDate(obj->anniversary);
-    fprintf(fp, "%s\r\n", line);
-    free(line);
+    if(obj->anniversary != NULL) {
+        fprintf(fp, "ANNIVERSARY:");
+        line = printDate(obj->anniversary);
+        fprintf(fp, "%s\r\n", line);
+        free(line);
+    }
 
     fprintf(fp, "END:VCARD\r\n");
 

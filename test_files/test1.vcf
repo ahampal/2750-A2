@@ -15,7 +15,7 @@ x-qq:21588891
 FN:Simon Perreault
 N:Perreault;Simon;;;ing. jr,M.Sc.
 BDAY:--0203
-ANNIVERSARY:200908081430-0500
+ANNIVERSARY:20090808T1430-0500
 GENDER:M
 LANG;PREF=1:fr
 LANG;PREF=2:en
@@ -42,5 +42,5 @@ LABEL;TYPE=WORK,PREF:100 Waters Edge\nBaytown\, LA 30314\nUnited States of Ameri
 ADR;TYPE=HOME:;;42 Plantation St.;Baytown;LA;30314;United States of America
 LABEL;TYPE=HOME:42 Plantation St.\nBaytown\, LA 30314\nUnited States of America
 EMAIL:forrestgump@example.com
-REV:2008-04-24T19:52:43Zs
+REV:2008-04-24T19:52:43Z
 END:VCARD
