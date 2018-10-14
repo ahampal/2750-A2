@@ -1,9 +1,11 @@
 #include "CardTestUtilities.h"
 
 #define CTEST 1
-#define PTEST 0
+#define PTEST 1
 #define WTEST 1
 #define VTEST 1
+#define NUMCARDS 10
+#define BLUE "\033[1m\033[34m"
 
 int main(int argc, char **argv) {
     Card *refCard;
@@ -11,11 +13,14 @@ int main(int argc, char **argv) {
     VCardErrorCode retVal;
     char *retString;
     char *printedCard = NULL;
+    Card *invCard;
+    char *invCardDir;
 
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
     retString = printError(retVal);
     if(CTEST) {
+        printf(BLUE"TESTING CREATECARD\n"RESET);
         if(retVal == OK) {
             printf(GRN);
         }
@@ -31,7 +36,7 @@ int main(int argc, char **argv) {
     //printCard Test
     printedCard = printCard(refCard);
     if(printedCard != NULL) {
-        if(PTEST) printf("%s", printedCard);
+        if(PTEST) printf(BLUE"\nTESTING PRINTCARD\n"RESET"%s", printedCard);
         free(printedCard);
     }
 
@@ -39,6 +44,7 @@ int main(int argc, char **argv) {
     retVal = writeCard("writeOne.vcf", refCard);
     retString = printError(retVal);
     if(WTEST) {
+        printf(BLUE"\nTESTING WRITECARD\n"RESET);
         if(retVal == OK) {
             printf(GRN);
         }
@@ -68,6 +74,7 @@ int main(int argc, char **argv) {
     retVal = validateCard(refCard);
     retString = printError(retVal);
     if(VTEST) {
+        printf(BLUE"\nTESTING VALIDATECARD WITH VALID FILE\n"RESET);
         if(retVal != OK) {
             printf(RED);
         }
@@ -79,6 +86,28 @@ int main(int argc, char **argv) {
     }
     free(retString);
     retString = NULL;
+
+    if(VTEST) {
+        printf(BLUE"\nTESTING VALIDATECARD WITH INVALID FILES\n"RESET);
+        for(int i = 0; i < NUMCARDS; i++) {
+            invCardDir = malloc(sizeof(char) * (strlen("../test_files/validateCardTesting/test1.vcf") + 1));
+            sprintf(invCardDir, "../test_files/validateCardTesting/test%d.vcf", i);
+            retVal = createCard(invCardDir, &invCard);
+            retVal = validateCard(invCard);
+            if(retVal != OK) {
+                retString = printError(retVal);
+                printf(GRN"test %d status: %s\n"RESET, i, retString);
+                free(retString);
+            }
+            else {
+                retString = printError(retVal);
+                printf(RED"test %d status: %s\n"RESET, i, retString);
+                free(retString);
+            }
+            free(invCardDir);
+            deleteCard(invCard);
+        }
+    }
 
     deleteCard(refCard);
     return 0;
