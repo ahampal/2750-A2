@@ -170,7 +170,88 @@ VCardErrorCode checkDTStruct(DateTime *a) {
 
 }
 
+void countCardinality(Property *prop, List *instances) {
+    ListIterator instanceIter;
+    void *node;
+    Counter *currProp;
+    Counter *toBeAdded;
+    char *tmpName;
 
+    instanceIter = createIterator(instances);
+    while((node = nextElement(&instanceIter)) != NULL) {
+        currProp = (Counter *)node;
+        tmpName = malloc(sizeof(char) * (strlen(prop->name) + 1));
+        strcpy(tmpName, prop->name);
+        strcat(tmpName, "\0");
+        if(strcmp(currProp->propName, upperCaseStr(tmpName)) == 0) {
+            currProp->count++;
+            free(tmpName);
+            return;
+        }
+        free(tmpName);
+    }
+
+    toBeAdded = malloc(sizeof(Counter) + sizeof(char) * (strlen(prop->name) + 1));
+    strcpy( toBeAdded->propName, upperCaseStr(prop->name));
+    strcat(toBeAdded->propName, "\0");
+    toBeAdded->count = 1;
+    insertBack(instances, toBeAdded);
+}
+
+char *printCounter(void *toBePrinted) {
+    return NULL;
+}
+void deleteCounter(void *toBeDeleted) {
+
+    if(toBeDeleted == NULL) return;
+
+    Counter *tmp;
+    tmp = (Counter *)toBeDeleted;
+
+    free(tmp);
+
+    return;
+}
+
+int compareCounter(const void *first, const void *second) {
+    if(first == NULL) return -1;
+    if(second == NULL) return -1;
+
+    Counter *a = (Counter *)first;
+    Counter *b = (Counter *)second;
+
+    return strcmp(a->propName, b->propName);
+}
+
+VCardErrorCode checkCardinality(List *instances) {
+    ListIterator instanceIter;
+    void *node;
+    Counter *currProp;
+
+    instanceIter = createIterator(instances);
+    while((node = nextElement(&instanceIter)) != NULL) {
+        currProp = (Counter *)node;
+        if(strcmp(currProp->propName, "KIND\0") == 0) {
+            if(currProp->count > 1) return INV_PROP;
+        }
+        else if(strcmp(currProp->propName, "FN\0") == 0) {
+            if(currProp->count < 0) return INV_PROP;
+        }
+        else if(strcmp(currProp->propName, "N\0") == 0) {
+            if(currProp->count > 1) return INV_PROP;
+        }
+        else if(strcmp(currProp->propName, "GENDER\0") == 0) {
+            if(currProp->count > 1) return INV_PROP;
+        }
+        else if(strcmp(currProp->propName, "PRODID\0") == 0) {
+            if(currProp->count > 1) return INV_PROP;
+        }
+        else if(strcmp(currProp->propName, "REV\0") == 0 ) {
+            if(currProp->count > 1) return INV_PROP;
+        }
+    }
+    return OK;
+}
 
 VCardErrorCode validateCard(const Card* obj) {
 
@@ -182,22 +263,43 @@ VCardErrorCode validateCard(const Card* obj) {
     ListIterator optionalPropIter;
     void *node;
     Property *currProp;
+    List *instances = initializeList(&printCounter, &deleteCounter, &compareCounter);
 
     //validate struct implementation constraints and vCard Specifications
     retVal = checkPropStruct(obj->fn);
-    if(retVal != OK) return retVal;
+    if(retVal != OK) {
+        freeList(instances);
+        return retVal;
+    }
     optionalPropIter = createIterator(obj->optionalProperties);
     while((node = nextElement(&optionalPropIter)) != NULL) {
         currProp = (Property *)node;
         retVal = checkPropStruct(currProp);
-        if(retVal != OK) return retVal;
+        if(retVal != OK) {
+            freeList(instances);
+            return retVal;
+        }
+        countCardinality(currProp, instances);
     }
     retVal = checkDTStruct(obj->birthday);
-    if(retVal != OK) return retVal;
+    if(retVal != OK) {
+        freeList(instances);
+        return retVal;
+    }
 
     retVal = checkDTStruct(obj->anniversary);
-    if(retVal != OK) return retVal;
+    if(retVal != OK) {
+        freeList(instances);
+        return retVal;
+    }
+
+    retVal = checkCardinality(instances);
+    if(retVal != OK) {
+        freeList(instances);
+        return retVal;
+    }
     
+    freeList(instances);
     return OK;
 }
 

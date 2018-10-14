@@ -32,5 +32,15 @@ VCardErrorCode checkPropStruct(Property *a);
 VCardErrorCode checkPropName(char *a);
 VCardErrorCode checkPropVal(List *a);
 VCardErrorCode checkParamList(List *a);
+void countCardinality(Property *prop, List *instances);
+VCardErrorCode checkCardinality(List *instances);
+int compareCounter(const void *first, const void *second);
+void deleteCounter(void *toBeDeleted);
+char *printCounter(void *toBePrinted);
+
+typedef struct CardinalityCounter {
+    int count;
+    char propName[];
+}Counter;
 
 #endif
