@@ -94,8 +94,255 @@ VCardErrorCode checkPropStruct(Property *a) {
 
     retVal = checkParamList(toCheck->parameters);
     if(retVal != OK) return retVal;
+    retVal = checkValCardinality(toCheck);
+    if(retVal != OK) return retVal;
 
     return OK; 
+}
+
+VCardErrorCode checkValCardinality(Property *toCheck) {
+
+    if(toCheck == NULL) return INV_PROP;
+
+    char *currProp = NULL;
+
+    currProp = malloc(sizeof(char) * (strlen(toCheck->name) + 1));
+    strcpy(currProp, toCheck->name);
+    strcat(currProp, "\0");
+    currProp = upperCaseStr(currProp);
+
+    if(strcmp(currProp, "SOURCE\0") == 0) {
+        if(getLength(toCheck->values) < 0 || getLength(toCheck->values) > 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "KIND\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "XML\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "FN\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "N\0") == 0) {
+        if(getLength(toCheck->values) != 5) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "NICKNAME\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "PHOTO\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "GENDER\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 2) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "ADR\0") == 0) {
+        if(getLength(toCheck->values) != 7) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "TEL\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "EMAIL\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "IMPP\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "LANG\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "TZ\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "GEO\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "TEXT\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "ROLE\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "LOGO\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "ORG\0") == 0) {
+        if(getLength(toCheck->values) < 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "MEMBER\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "RELATED\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "CATEGORIES\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "NOTE\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }  
+
+    if(strcmp(currProp, "PRODID\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "REV\0") == 0) {
+        if(getLength(toCheck->values) != 1) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "SOUND\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }           
+
+    if(strcmp(currProp, "UID\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "CLIENTPIDMAP\0") == 0) {
+        if(getLength(toCheck->values) < 2 || getLength(toCheck->values) > 5) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "URL\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "KEY\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "FBURL\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "CALADURI\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+
+    if(strcmp(currProp, "CALURI\0") == 0) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+            free(currProp);
+            return INV_PROP;
+        }
+    }
+    free(currProp);
+    return OK;
 }
 
 VCardErrorCode checkParamList(List *a) {

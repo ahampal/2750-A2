@@ -37,6 +37,7 @@ VCardErrorCode checkCardinality(List *instances);
 int compareCounter(const void *first, const void *second);
 void deleteCounter(void *toBeDeleted);
 char *printCounter(void *toBePrinted);
+VCardErrorCode checkValCardinality(Property *toCheck);
 
 typedef struct CardinalityCounter {
     int count;
