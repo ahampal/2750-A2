@@ -12,7 +12,7 @@ void addProperty(Card* card, const Property* toBeAdded) {
     if(card == NULL || toBeAdded == NULL) {
         return;
     }
-
+    /*
     Property *prop;
     ListIterator paramIter;
     ListIterator valIter;
@@ -53,8 +53,8 @@ void addProperty(Card* card, const Property* toBeAdded) {
         insertBack(prop->values, valToBeAdded);
         valToBeAdded++;
     }
-
-    insertBack(card->optionalProperties, prop);
+    */
+    insertBack(card->optionalProperties, toBeAdded);
 
     return;
 }
