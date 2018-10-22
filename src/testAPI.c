@@ -1,11 +1,12 @@
 #include "CardTestUtilities.h"
 
-#define CTEST 1
-#define PTEST 1
-#define WTEST 1
-#define VTEST 1
-#define STEST 1
-#define JTEST 1
+#define CREATE_CARD_TEST 1
+#define PRINT_CARD_TEST 1
+#define WRITE_CARD_TEST 1
+#define VALIDATE_CARD_TEST 1
+#define STRLISTTOJSON_TEST 1
+#define JSONTOSTRLIST_TEST 1
+#define PROPTOJSON_TEST 1
 #define NUM_INV_CARDS 31
 #define NUM_V_CARDS 12
 #define BLUE "\033[1m\033[34m"
@@ -28,7 +29,7 @@ int main(int argc, char **argv) {
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
     retString = printError(retVal);
-    if(CTEST) {
+    if(CREATE_CARD_TEST) {
         printf(BLUE"TESTING CREATECARD\n"RESET);
         if(retVal == OK) {
             printf(GRN);
@@ -45,7 +46,7 @@ int main(int argc, char **argv) {
     //printCard Test
     printedCard = printCard(refCard);
     if(printedCard != NULL) {
-        if(PTEST) printf(BLUE"\nTESTING PRINTCARD\n"RESET GRN"%s"RESET, printedCard);
+        if(PRINT_CARD_TEST) printf(BLUE"\nTESTING PRINTCARD\n"RESET GRN"%s"RESET, printedCard);
         free(printedCard);
     }
     else {
@@ -56,7 +57,7 @@ int main(int argc, char **argv) {
     //writeCard Test
     retVal = writeCard("writeOne.vcf", refCard);
     retString = printError(retVal);
-    if(WTEST) {
+    if(WRITE_CARD_TEST) {
         printf(BLUE"\nTESTING WRITECARD\n"RESET);
         if(retVal == OK) {
             printf(GRN);
@@ -83,7 +84,7 @@ int main(int argc, char **argv) {
     free(retString);
     retString = NULL;
 
-    if(VTEST) {
+    if(VALIDATE_CARD_TEST) {
         printf(BLUE"\nTESTING VALIDATECARD WITH INVALID FILES\n"RESET);
         for(int i = 0; i < NUM_INV_CARDS; i++) {
             invCardDir = malloc(sizeof(char) * (strlen("../test_files/validateCardTesting/invalid/test1.vcf") + 4));
@@ -131,7 +132,7 @@ int main(int argc, char **argv) {
     }
 
     //strListToJSON testing
-    if(STEST) {
+    if(STRLISTTOJSON_TEST) {
         printf(BLUE"\nTESTING STRLISTTOJSON\n"RESET);
         optionalPropIter = createIterator(refCard->optionalProperties);
         while(( tmp = nextElement(&optionalPropIter) ) != NULL) {
@@ -148,7 +149,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    if(JTEST) {
+    if(JSONTOSTRLIST_TEST) {
         printf(BLUE"\nTESTING JSONTOSTRLIST\n"RESET);
         prop = getFromFront(refCard->optionalProperties);
         jsonString = strListToJSON(prop->values);
@@ -158,11 +159,29 @@ int main(int argc, char **argv) {
         }
         else {
             printf(GRN);
-            _tPrintList("Created List. Contents of list are: ", tmpList);
+            _tPrintList("Successfully created List. Contents of list are: ", tmpList);
             printf(RESET);
         }
         free(jsonString);
+        jsonString = NULL;
         freeList(tmpList);
+    }
+
+    if(PROPTOJSON_TEST) {
+        printf(BLUE"\nTESTING PROPTOJSON\n"RESET);
+        optionalPropIter = createIterator(refCard->optionalProperties);
+        while((tmp = nextElement(&optionalPropIter)) != NULL) {
+            prop = (Property *)tmp;
+            jsonString = propToJSON(prop);
+            if(strcmp(jsonString, "") == 0) {
+                printf(RED"Empty JSON string\n"RESET);
+            }
+            else {
+                printf(GRN"JSON String: %s\n"RESET, jsonString);
+            }
+            free(jsonString);
+            jsonString = NULL;
+        }
     }
 
     deleteCard(refCard);
