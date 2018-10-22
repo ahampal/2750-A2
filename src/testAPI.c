@@ -10,6 +10,7 @@
 #define JSONTOPROP_TEST 1
 #define DTTOJSON_TEST 1
 #define ADDPROP_TEST 1
+#define JSONTOCARD_TEST 1
 #define NUM_INV_CARDS 31
 #define NUM_V_CARDS 12
 #define BLUE "\033[1m\033[34m"
@@ -30,7 +31,7 @@ int main(int argc, char **argv) {
     char *jsonString;
     Property *AnotherProp;
     DateTime *tmpDate;
-
+    Card *jsonCard;
 
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
@@ -238,6 +239,21 @@ int main(int argc, char **argv) {
         prop = _tCreateTestProp(refCard->fn->name,refCard->fn->group);
         addProperty(refCard, prop);
         printf(GRN"Passed\n"RESET);
+    }
+
+    if(JSONTOCARD_TEST) {
+        printf(BLUE"\nTESTING JSONTOCARD\n"RESET);
+        jsonCard = JSONtoCard("{\"FN\":\"Simon Perreault\"}");
+        retString = printCard(jsonCard);
+        if(retString == NULL) {
+            printf(RED"json card is null\n"RESET);
+        }
+        else {
+            printf(GRN"%s\n"RESET, retString);
+            free(retString);
+            retString = NULL;
+        }
+        deleteCard(jsonCard);
     }
 
     deleteCard(refCard);
