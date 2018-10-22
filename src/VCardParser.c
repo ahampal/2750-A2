@@ -19,7 +19,7 @@ Card* JSONtoCard(const char* str) {
     char *value = NULL;
     Property *fnProp = NULL;
 
-    toReturn = malloc(sizeof(toReturn));
+    toReturn = malloc(sizeof(Card));
     castedStr = (char *)str;
 
     toReturn->birthday = NULL;
@@ -39,7 +39,7 @@ Card* JSONtoCard(const char* str) {
     fnProp->group = malloc(sizeof(char));
     strcpy(fnProp->group, "");
 
-    fnProp->name = malloc(sizeof(char) * (strlen("FN\0")));
+    fnProp->name = malloc(sizeof(char) * (strlen("FN\0") + 1));
     strcpy(fnProp->name, "FN\0");
 
     fnProp->parameters = initializeList(&printParameter, &deleteParameter, &compareParameters);
