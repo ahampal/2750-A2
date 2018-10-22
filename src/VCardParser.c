@@ -7,6 +7,45 @@
 //creating invalid cards to be used for testing validateCard
 
 //A2 functions
+Property* JSONtoProp(const char* str) {
+
+    if(str == NULL) return NULL;
+    if(*str != '{') return NULL;
+    if(str[strlen(str) - 1] != '}') return NULL;
+
+    char *dQuoteOne = NULL;
+    char *dQuoteTwo = NULL;
+    char *valJSON = NULL;
+    char *castedStr = (char *)str;
+    Property *toReturn;
+
+    toReturn = malloc(sizeof(Property));
+    dQuoteOne = castedStr + 9;
+    dQuoteTwo = myStrChr(dQuoteOne + 1, '\"');
+    toReturn->group = malloc(sizeof(char) *(dQuoteTwo - dQuoteOne + 1));
+    strncpy(toReturn->group, dQuoteOne + 1, dQuoteTwo - dQuoteOne - 1);
+    toReturn->group[dQuoteTwo - dQuoteOne - 1] = '\0';
+
+    dQuoteOne = dQuoteTwo + 9;
+    dQuoteTwo = myStrChr(dQuoteOne + 1, '\"');
+    toReturn->name = malloc(sizeof(char) * (dQuoteTwo - dQuoteOne + 1));
+    strncpy(toReturn->name, dQuoteOne + 1, dQuoteTwo - dQuoteOne - 1);
+    toReturn->name[dQuoteTwo - dQuoteOne - 1] = '\0';
+
+    dQuoteOne = dQuoteTwo + 10;
+    dQuoteTwo = castedStr + strlen(castedStr) - 2;
+    valJSON = malloc(sizeof(char) * (dQuoteTwo - dQuoteOne + 1));
+    strncpy(valJSON, dQuoteOne + 1, dQuoteTwo - dQuoteOne);
+    valJSON[dQuoteTwo - dQuoteOne] = '\0';
+    toReturn->values = JSONtoStrList(valJSON);
+    free(valJSON);
+
+    toReturn->parameters = initializeList(&printParameter, &deleteParameter, &compareParameters);
+
+    return toReturn;
+
+}
+
 char* propToJSON(const Property* prop) {
 
     char *toReturn;
