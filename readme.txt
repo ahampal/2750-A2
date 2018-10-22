@@ -15,6 +15,7 @@ a linked list api to organize and store vCards in memory. There are four major f
 Compilation:
 -cd terminal to A1AmitHampal
 -execute makefile by typing 'make' into terminal
+-execute test main by typing 'make all' into terminal
 
 Assumptions and limitations:
 -No known limitations
