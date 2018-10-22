@@ -4,6 +4,7 @@
 #define PTEST 1
 #define WTEST 1
 #define VTEST 1
+#define STEST 1
 #define NUM_INV_CARDS 31
 #define NUM_V_CARDS 12
 #define BLUE "\033[1m\033[34m"
@@ -16,6 +17,10 @@ int main(int argc, char **argv) {
     char *printedCard = NULL;
     Card *invCard;
     char *invCardDir;
+    char *listToStr;
+    ListIterator optionalPropIter;
+    Property *prop;
+    void *tmp;
 
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
@@ -119,6 +124,24 @@ int main(int argc, char **argv) {
             free(invCardDir);
             invCardDir = NULL;
             deleteCard(invCard); 
+        }
+    }
+
+    //strListToJSON testing
+    if(STEST) {
+        printf(BLUE"\nTESTING STRLISTTOJSON\n"RESET);
+        optionalPropIter = createIterator(refCard->optionalProperties);
+        while(( tmp = nextElement(&optionalPropIter) ) != NULL) {
+            prop = (Property *)tmp;
+            listToStr = strListToJSON(prop->values);
+            if(listToStr == NULL) {
+                printf(RED"Null JSON String\n"RESET);
+            }
+            else {
+                printf(GRN"JSON String is: %s\n"RESET, listToStr);
+            }
+            free(listToStr);
+            listToStr = NULL;
         }
     }
 
