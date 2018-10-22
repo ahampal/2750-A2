@@ -7,6 +7,41 @@
 //creating invalid cards to be used for testing validateCard
 
 //A2 functions
+char* propToJSON(const Property* prop) {
+
+    char *toReturn;
+    char *valJSON;
+    Property *castedProp = (Property *)prop;
+
+    if(checkPropStruct(castedProp) != OK) {
+        toReturn = malloc(sizeof(char));
+        strcpy(toReturn, "\0");
+        return toReturn;
+    }
+
+    toReturn = malloc(sizeof(char) * 11);
+    strcpy(toReturn, "{\"group\":\"\0");
+    
+    //add group
+    toReturn = realloc(toReturn, strlen(toReturn) + strlen(prop->group) + strlen("\",\"name\":\"\0") + 1);
+    strcat(toReturn, prop->group);
+    strcat(toReturn, "\",\"name\":\"\0");
+
+    //add prop
+    toReturn = realloc(toReturn, strlen(toReturn) + strlen(prop->name) + strlen("\",\"values\":\0") + 1);
+    strcat(toReturn, prop->name);
+    strcat(toReturn, "\",\"values\":\0");
+
+    //add values
+    valJSON = strListToJSON(prop->values);
+    toReturn = realloc(toReturn, strlen(toReturn) + strlen(valJSON) + 2);
+    strcat(toReturn, valJSON);
+    strcat(toReturn, "}\0");
+    free(valJSON);
+
+    return toReturn;
+}
+
 char* strListToJSON(const List* strList) {
 
     if(strList == NULL) return NULL;
