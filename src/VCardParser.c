@@ -7,11 +7,135 @@
 //creating invalid cards to be used for testing validateCard
 
 //A2 functions
+Card* JSONtoCard(const char* str) {
+    if(str == NULL || *str != '{' || str[strlen(str) - 1] != '}') {
+        return NULL;
+    }
+
+    Card *toReturn = NULL;
+    char *tmpOne = NULL;
+    char *tmpTwo = NULL;
+    char *castedStr = NULL;
+    char *value = NULL;
+    Property *fnProp = NULL;
+
+    toReturn = malloc(sizeof(toReturn));
+    castedStr = (char *)str;
+
+    toReturn->birthday = NULL;
+    toReturn->anniversary = NULL;
+    toReturn->optionalProperties = initializeList(&printProperty, &deleteProperty, &compareProperties);
+
+    tmpOne = myStrChr(castedStr, '\"');
+    tmpTwo = myStrChr(tmpOne + 1, '\"');
+    tmpOne = myStrChr(tmpTwo + 1, '\"');
+    tmpTwo = myStrChr(tmpOne + 1, '\"');
+
+    value = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
+    strncpy(value, tmpOne + 1, tmpTwo - tmpOne - 1);
+    value[tmpTwo - tmpOne - 1] = '\0';
+
+    fnProp = malloc(sizeof(Property));
+    fnProp->group = malloc(sizeof(char));
+    strcpy(fnProp->group, "");
+
+    fnProp->name = malloc(sizeof(char) * (strlen("FN\0")));
+    strcpy(fnProp->name, "FN\0");
+
+    fnProp->parameters = initializeList(&printParameter, &deleteParameter, &compareParameters);
+    fnProp->values = initializeList(&printValue, &deleteValue, &compareValues);
+    insertBack(fnProp->values, value);
+
+    toReturn->fn = fnProp;
+
+    return toReturn;
+
+}
+
+DateTime* JSONtoDT(const char* str) {
+    if(str == NULL) {
+        return NULL;
+    }
+
+    DateTime *toReturn;
+    char *castedStr;
+    char *tmpOne;
+    char *tmpTwo;
+    char *val;
+
+    toReturn = malloc(sizeof(DateTime));
+    castedStr = (char *)str;
+    tmpOne = myStrChr(castedStr, ':');
+    tmpTwo = myStrChr(tmpOne, ',');
+
+    if(*castedStr != '{' || castedStr[strlen(castedStr) - 1] != '}') {
+        return NULL;
+    }
+
+    val = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
+    strncpy(val, tmpOne + 1, tmpTwo - tmpOne - 1);
+    val[tmpTwo - tmpOne - 1] = '\0';
+
+    if(strcmp(val, "false") == 0) {
+        free(val);
+        toReturn = realloc(toReturn, sizeof(DateTime) + sizeof(char));
+        toReturn->isText = false;
+        toReturn->UTC = true;
+        strcpy(toReturn->text, "");
+
+        tmpOne = myStrChr(tmpOne + 1, ':');
+        tmpTwo = myStrChr(tmpOne + 1, '\"');
+
+        val = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
+        strncpy(val, tmpOne + 1, tmpTwo - tmpOne - 1);
+        val[tmpTwo - tmpOne - 1] = '\0';
+
+        strcpy(toReturn->date, val);
+        free(val);
+
+        tmpOne = myStrChr(tmpOne + 1, ':');
+        tmpTwo = myStrChr(tmpOne + 1, '\"');
+
+        val = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
+        strncpy(val, tmpOne + 1, tmpTwo - tmpOne - 1);
+        val[tmpTwo - tmpOne - 1] = '\0';
+
+        strcpy(toReturn->time, val);
+        free(val);
+    }
+    else {
+        free(val);
+        toReturn->isText = true;
+        toReturn->UTC = false;
+
+        strcpy(toReturn->time, "");
+        strcpy(toReturn->date, "");
+
+        tmpOne = myStrChr(tmpOne, ':');
+        tmpOne = myStrChr(tmpOne, ':');
+        tmpOne = myStrChr(tmpOne, ':');
+        tmpTwo = myStrChr(tmpOne + 1, '\"');
+
+        free(val);
+        val = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
+        strncpy(val, tmpOne + 1, tmpTwo - tmpOne - 1);
+        val[tmpTwo - tmpOne - 1] = '\0';
+
+        toReturn = realloc(toReturn, sizeof(DateTime) + strlen(val));
+        strcpy(toReturn->text, val);
+
+        free(val);
+    }
+
+    return toReturn;
+}
+
 void addProperty(Card* card, const Property* toBeAdded) {
 
     if(card == NULL || toBeAdded == NULL) {
         return;
     }
+    Property *castedProp = (Property *)toBeAdded;
     /*
     Property *prop;
     ListIterator paramIter;
@@ -54,7 +178,7 @@ void addProperty(Card* card, const Property* toBeAdded) {
         valToBeAdded++;
     }
     */
-    insertBack(card->optionalProperties, toBeAdded);
+    insertBack(card->optionalProperties, castedProp);
 
     return;
 }
@@ -160,7 +284,7 @@ char* propToJSON(const Property* prop) {
     char *valJSON;
     Property *castedProp = (Property *)prop;
 
-    if(castedProp == NULL) {
+    if(castedProp == NULL || castedProp->group == NULL || castedProp->name == NULL || castedProp->parameters == NULL || castedProp->values == NULL) {
         toReturn = malloc(sizeof(char));
         strcpy(toReturn, "\0");
         return toReturn;
