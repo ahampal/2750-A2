@@ -38,6 +38,14 @@ int compareCounter(const void *first, const void *second);
 void deleteCounter(void *toBeDeleted);
 char *printCounter(void *toBePrinted);
 VCardErrorCode checkValCardinality(Property *toCheck);
+VCardErrorCode dateFormatCheck(char *toCheck);
+VCardErrorCode timeFormatCheck(char *toCheck);
+VCardErrorCode dayCheck(char *a);
+VCardErrorCode monthCheck(char *a);
+VCardErrorCode yearCheck(char *a);
+VCardErrorCode secCheck(char *a);
+VCardErrorCode minCheck(char *a);
+VCardErrorCode hourCheck(char *a);
 
 typedef struct CardinalityCounter {
     int count;

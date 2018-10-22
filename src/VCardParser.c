@@ -1,13 +1,16 @@
 #include "parserHelper.h"
 #include <ctype.h>
 
-#define DEBUG 0
+#define DEBUG 0 
+#define CREATECARD_ERROR_CHECKING 0 
+//Turning error checking off may result in crashes but is necessary for
+//creating invalid cards to be used for testing validateCard
+
 //A2 functions
 VCardErrorCode writeCard(const char* fileName, const Card* obj) {
 
     if(fileName == NULL) return WRITE_ERROR;
     if(obj == NULL) return WRITE_ERROR;
-    if(strlen(fileName) < 1) return WRITE_ERROR;
 
     FILE *fp = NULL;
     char *fNameCpy = NULL;
@@ -94,6 +97,7 @@ VCardErrorCode checkPropStruct(Property *a) {
 
     retVal = checkParamList(toCheck->parameters);
     if(retVal != OK) return retVal;
+    
     retVal = checkValCardinality(toCheck);
     if(retVal != OK) return retVal;
 
@@ -154,7 +158,7 @@ VCardErrorCode checkValCardinality(Property *toCheck) {
     }
 
     if(strcmp(currProp, "PHOTO\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
@@ -175,7 +179,7 @@ VCardErrorCode checkValCardinality(Property *toCheck) {
     }
 
     if(strcmp(currProp, "TEL\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 28) {
             free(currProp);
             return INV_PROP;
         }
@@ -189,7 +193,7 @@ VCardErrorCode checkValCardinality(Property *toCheck) {
     }
 
     if(strcmp(currProp, "IMPP\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
@@ -203,7 +207,7 @@ VCardErrorCode checkValCardinality(Property *toCheck) {
     }
 
     if(strcmp(currProp, "TZ\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
@@ -231,7 +235,7 @@ VCardErrorCode checkValCardinality(Property *toCheck) {
     }
 
     if(strcmp(currProp, "LOGO\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
@@ -245,14 +249,14 @@ VCardErrorCode checkValCardinality(Property *toCheck) {
     }
 
     if(strcmp(currProp, "MEMBER\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
     }
 
     if(strcmp(currProp, "RELATED\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
@@ -287,56 +291,56 @@ VCardErrorCode checkValCardinality(Property *toCheck) {
     }
 
     if(strcmp(currProp, "SOUND\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
     }           
 
     if(strcmp(currProp, "UID\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
     }
 
     if(strcmp(currProp, "CLIENTPIDMAP\0") == 0) {
-        if(getLength(toCheck->values) < 2 || getLength(toCheck->values) > 5) {
+        if(getLength(toCheck->values) != 2) {
             free(currProp);
             return INV_PROP;
         }
     }
 
     if(strcmp(currProp, "URL\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
     }
 
     if(strcmp(currProp, "KEY\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
     }
 
     if(strcmp(currProp, "FBURL\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
     }
 
     if(strcmp(currProp, "CALADURI\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
     }
 
     if(strcmp(currProp, "CALURI\0") == 0) {
-        if(getLength(toCheck->values) < 1 || getLength(toCheck->values) > 4) {
+        if(getLength(toCheck->values) != 1) {
             free(currProp);
             return INV_PROP;
         }
@@ -379,7 +383,7 @@ VCardErrorCode checkPropName(char *a) {
     char name[35][15]  = {"SOURCE\0", "KIND\0" , "FN\0" , "N\0" , "NICKNAME\0"
         , "PHOTO\0" , "BDAY\0" , "ANNIVERSARY\0" , "GENDER\0" , "ADR\0" , "TEL\0"
         , "EMAIL\0" , "IMPP\0" , "LANG\0" , "TZ\0" , "GEO\0" , "TITLE\0" , "ROLE\0"
-        , "LOGO" , "ORG" , "MEMBER" , "RELATED" , "CATEGORIES"
+        , "LOGO\0" , "ORG\0" , "MEMBER\0" , "RELATED\0" , "CATEGORIES\0"
         , "NOTE\0" , "PRODID\0" , "REV\0" , "SOUND\0" , "UID\0" , "CLIENTPIDMAP\0"
         , "URL\0" , "KEY\0" , "FBURL\0" , "CALADRURI\0" , "CALURI\0" , "XML\0"};
 
@@ -409,12 +413,265 @@ VCardErrorCode checkDTStruct(DateTime *a) {
     if(toCheck->isText == false && toCheck->UTC == true) return INV_DT;
 
     if(toCheck->isText == false) {
-        if(dateCheck(toCheck->date) != OK) return INV_DT;
-        if(dateCheck(toCheck->time) != OK) return INV_DT;
+        if(strcmp(toCheck->date, "") == 0 && strcmp(toCheck->time, "") == 0) return INV_DT;
+        if(dateFormatCheck(toCheck->date) != OK) return INV_DT;
+        if(timeFormatCheck(toCheck->time) != OK) return INV_DT;
     }
 
     return OK;
 
+}
+
+VCardErrorCode timeFormatCheck(char *toCheck) {
+
+    if(toCheck == NULL) return INV_DT;
+    if(strcmp(toCheck, "") == 0) return OK;
+    if(strlen(toCheck) > 6) return INV_DT;
+
+    char *hour = malloc(sizeof(char) * 3);
+    char *min = malloc(sizeof(char) * 3);
+    char *sec = malloc(sizeof(char) * 3);
+    VCardErrorCode secRetVal;
+    VCardErrorCode minRetVal;
+    VCardErrorCode hourRetVal;
+
+    strcpy(hour, "-1\0");
+    strcpy(min, "-1\0");
+    strcpy(sec, "-1\0");
+
+    for(int i = 0; toCheck[i] != '\0'; i++) {
+        if(isdigit(toCheck[i]) == 0 && toCheck[i] != '-') {
+            free(hour);
+            free(min);
+            free(sec);
+            return INV_DT;
+        }
+    }
+
+    if(strncmp(toCheck, "--", 2) == 0) {
+        strncpy(sec, toCheck + 2, 2);
+        strcat(sec, "\0");
+        secRetVal = secCheck(sec);
+        free(hour);
+        free(min);
+        free(sec);
+        return secRetVal;
+    }
+    else if(strncmp(toCheck, "-", 1) == 0) {
+        strncpy(min, toCheck + 1, 2);
+        strcat(min, "\0");
+        if(strlen(toCheck) > 3 && strlen(toCheck) >= 5) {
+            strncpy(sec, toCheck + 3, 2);
+            strcat(sec, "\0");
+        }
+        secRetVal = secCheck(sec);
+        minRetVal = minCheck(min);
+        free(sec);
+        free(min);
+        free(hour);
+        if(strlen(toCheck) > 3) {
+            return secRetVal + minRetVal;
+        }
+        return minRetVal;
+    }
+    else {
+        strncpy(hour, toCheck, 2);
+        strcat(hour, "\0");
+        if(strlen(toCheck) > 2 && strlen(toCheck) >= 4) {
+            strncpy(min, toCheck + 2, 2);
+            strcat(min, "\0");
+            if(strlen(toCheck) > 4 && strlen(toCheck) >= 6) {
+                strncpy(sec, toCheck + 4, 2);
+                strcat(sec, "\0");
+            }
+        }
+        secRetVal = secCheck(sec);
+        minRetVal = minCheck(min);
+        hourRetVal = hourCheck(hour);
+        free(sec);
+        free(min);
+        free(hour);
+        if(strlen(toCheck) > 2) {
+            if(strlen(toCheck) > 4) {
+                return hourRetVal + minRetVal + secRetVal;
+            }
+            return hourRetVal + minRetVal;
+        }
+        return hourRetVal;
+    }
+    return INV_DT;
+}
+
+VCardErrorCode secCheck(char *a) {
+    if(a == NULL) return INV_DT;
+    if(strcmp(a, "") == 0) return INV_DT;
+    if(strlen(a) != 2) return INV_DT;
+
+    double month = 0;
+    month = strtol(a, NULL, 10);
+
+    if(month < 0 || month > 60) return INV_DT;
+
+    return OK;
+}
+
+VCardErrorCode minCheck(char *a) {
+    if(a == NULL) return INV_DT;
+    if(strcmp(a, "") == 0) return INV_DT;
+    if(strlen(a) != 2) return INV_DT;
+
+    double month = 0;
+    month = strtol(a, NULL, 10);
+
+    if(month < 0 || month > 59) return INV_DT;
+
+    return OK;
+}
+
+VCardErrorCode hourCheck(char *a) {
+    if(a == NULL) return INV_DT;
+    if(strcmp(a, "") == 0) return INV_DT;
+    if(strlen(a) != 2) return INV_DT;
+
+    double month = 0;
+    month = strtol(a, NULL, 10);
+
+    if(month < 0 || month > 23) return INV_DT;
+
+    return OK;
+}
+
+VCardErrorCode dateFormatCheck(char *toCheck) {
+
+    if(toCheck == NULL) return INV_DT;
+    if(strcmp(toCheck, "") == 0) return OK;
+    if(strlen(toCheck) > 8) return INV_DT;
+
+    char *tmp;
+    char *year = malloc(sizeof(char) * 5);
+    char *month = malloc(sizeof(char) * 3);
+    char *day = malloc(sizeof(char) * 3);
+    VCardErrorCode dayRetVal;
+    VCardErrorCode monthRetVal;
+    VCardErrorCode yearRetVal;
+
+    strcpy(year, "-234\0");
+    strcpy(month, "00\0");
+    strcpy(day, "00\0");
+
+    for(int i = 0; toCheck[i] != '\0'; i++) {
+        if(isdigit(toCheck[i]) == 0 && toCheck[i] != '-') {
+            free(year);
+            free(month);
+            free(day);
+            return INV_DT;
+        }
+    }
+
+    if(strncmp(toCheck, "---", 3) == 0) {
+        strncpy(day, toCheck + 3, 2);
+        strcat(day, "\0");
+        dayRetVal = dayCheck(day);
+        free(year);
+        free(month);
+        free(day);
+        return dayRetVal;
+    }
+    else if(strncmp(toCheck, "--", 2) == 0) {
+        strncpy(month, toCheck + 2, 2);
+        strcat(month, "\0");
+        if(strlen(toCheck) > 4) {
+            strncpy(day, toCheck + 4, 2);
+            strcat(day, "\0");
+        }
+        monthRetVal = monthCheck(month);
+        dayRetVal = dayCheck(day);
+        free(year);
+        free(month);
+        free(day);
+        if(strlen(toCheck) > 4) {
+            return monthRetVal + dayRetVal;
+        }
+        return monthRetVal;
+    }
+    else if( (tmp = myStrChr(toCheck, '-')) != NULL) {
+        strncpy(year, toCheck, 4);
+        strcat(year, "\0");
+        strncpy(month, tmp + 1, 2);
+        strcat(month, "\0");
+        yearRetVal = yearCheck(year);
+        monthRetVal = monthCheck(month);
+        free(year);
+        free(month);
+        free(day);
+        return yearRetVal + monthRetVal;
+    } 
+    else {
+        strncpy(year, toCheck, 4);
+        strcat(year, "\0");
+        if(strlen(toCheck) > 4 && strlen(toCheck) >= 6) {
+            strncpy(month, toCheck + 4, 2);
+            strcat(month, "\0");
+            if(strlen(toCheck) > 6 && strlen(toCheck) >= 8) {
+                strncpy(day, toCheck + 6, 2);
+                strcat(day, "\0");
+            }
+        }
+        dayRetVal = dayCheck(day);
+        yearRetVal = yearCheck(year);
+        monthRetVal = monthCheck(month);
+        free(year);
+        free(month);
+        free(day);
+        if(strlen(toCheck) > 4) {
+            return dayRetVal + monthRetVal + yearRetVal;
+        }
+        return yearRetVal;
+    }
+
+    free(year);
+    free(month);
+    free(day);
+    return INV_DT;
+}
+
+VCardErrorCode yearCheck(char *a) {
+    if(a == NULL) return INV_DT;
+    if(strcmp(a, "") == 0) return INV_DT;
+    if(strlen(a) != 4) return INV_DT;
+
+    double month = 0;
+    month = strtol(a, NULL, 10);
+
+    if(month < 0 || month > 9999) return INV_DT;
+
+    return OK;
+}
+
+VCardErrorCode monthCheck(char *a) {
+    if(a == NULL) return INV_DT;
+    if(strcmp(a, "") == 0) return INV_DT;
+    if(strlen(a) != 2) return INV_DT;
+
+    double month = 0;
+    month = strtol(a, NULL, 10);
+
+    if(month < 1 || month > 12) return INV_DT;
+
+    return OK;
+}
+
+VCardErrorCode dayCheck(char *a) {
+    if(a == NULL) return INV_DT;
+    if(strcmp(a, "") == 0) return INV_DT;
+    if(strlen(a) != 2) return INV_DT;
+
+    double month = 0;
+    month = strtol(a, NULL, 10);
+
+    if(month < 1 || month > 31) return INV_DT;
+
+    return OK;
 }
 
 void countCardinality(Property *prop, List *instances) {
@@ -501,7 +758,7 @@ VCardErrorCode checkCardinality(List *instances) {
 }
 
 VCardErrorCode validateCard(const Card* obj) {
-
+    
     if(obj == NULL) return INV_CARD;
     if(obj->fn == NULL) return INV_CARD;
     if(obj->optionalProperties == NULL) return INV_CARD;
@@ -663,7 +920,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
 
     //check for begin syntax
 
-    if(beginBuff(buffer) != OK) {
+    if(beginBuff(buffer) != OK && CREATECARD_ERROR_CHECKING) {
         if(DEBUG) {printf("Card could not be created. Incorrect/Missing begin.\n");}
         return INV_CARD;
     }
@@ -681,7 +938,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
 
     //parse every content line until end of vcard
     while(token != NULL && strncmp(token, "END:VCARD", 10) != 0) {
-        if(strlen(token) > 998) {
+        if(strlen(token) > 998 && CREATECARD_ERROR_CHECKING) {
             free(buffCpy);
             return INV_PROP;
         }
@@ -691,7 +948,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         if(lGroup != NULL) {
             if(DEBUG) {printf("\nGroup: %s\n", lGroup);}
             retVal = checkGroup(lGroup);
-            if(retVal != OK) {
+            if(retVal != OK && CREATECARD_ERROR_CHECKING) {
                 freeLine(&lGroup, &lProp, &lParam, &lVal);
                 free(buffCpy);
                 return retVal;
@@ -703,7 +960,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         lProp = getProp(token);
         if(DEBUG) {printf("\nProperty: %s\n", lProp);}
         retVal = checkProp(lProp);
-        if(retVal != OK) {
+        if(retVal != OK && CREATECARD_ERROR_CHECKING) {
             freeLine(&lGroup, &lProp, &lParam, &lVal);
             free(buffCpy);
             return retVal;
@@ -714,7 +971,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         if(lParam != NULL) {
             if(DEBUG) {printf("Param: %s\n", lParam);}
             retVal = checkParam(lParam);
-            if(retVal != OK) {
+            if(retVal != OK && CREATECARD_ERROR_CHECKING) {
                 freeLine(&lGroup, &lProp, &lParam, &lVal);
                 free(buffCpy);
                 return retVal;
@@ -725,7 +982,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         lVal = getValue(token);
         retVal = checkValue(lVal);
         if(DEBUG) {printf("Value: %s\n", lVal);}
-        if(retVal != OK) {
+        if(retVal != OK && CREATECARD_ERROR_CHECKING) {
             freeLine(&lGroup, &lProp, &lParam, &lVal);
             free(buffCpy);
             return retVal;
@@ -800,7 +1057,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
             }
 
             if(newDate->isText == false) {
-                if(dateCheck(lVal) != OK) {
+                if(dateCheck(lVal) != OK && CREATECARD_ERROR_CHECKING) {
                     freeLine(&lGroup, &lProp, &lParam, &lVal);
                     deleteDate(newDate);
                     free(buffCpy);
@@ -830,19 +1087,19 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         
     }
 
-    if(endBuff(buffer) != OK) {
+    if(endBuff(buffer) != OK && CREATECARD_ERROR_CHECKING) {
         if(DEBUG) {printf("Card could not be created. Incorrect/missing end.\n");}
         free(buffCpy);
         return INV_CARD;
     }
 
-    if(numContentLines == 0) {
+    if(numContentLines == 0 && CREATECARD_ERROR_CHECKING) {
         if(DEBUG) {printf("Card could not be created. No Content Lines.\n");}
         free(buffCpy);
         return INV_CARD;
     }
 
-    if((*newCardObject)->fn == NULL) {
+    if((*newCardObject)->fn == NULL && CREATECARD_ERROR_CHECKING) {
         if(DEBUG) {printf("Card could not be created. No FN property.\n");}
         free(buffCpy);
         return INV_CARD;
@@ -1349,7 +1606,7 @@ VCardErrorCode createCard(char* fileName, Card** newCardObject) {
     (*newCardObject)->birthday = NULL;
     (*newCardObject)->anniversary = NULL;
     (*newCardObject)->fn = NULL;
-    if(fileCheck(fileName, fp) != OK) {
+    if(fileCheck(fileName, fp) != OK && CREATECARD_ERROR_CHECKING) {
         deleteCard(*newCardObject);
         *newCardObject = NULL;
         newCardObject = NULL;
