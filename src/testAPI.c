@@ -29,9 +29,8 @@ int main(int argc, char **argv) {
     List *tmpList;
     char *jsonString;
     Property *AnotherProp;
-    Card *minCard;
-    DateTime *bday;
-    DateTime *anniversary;
+    DateTime *tmpDate;
+
 
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
@@ -219,6 +218,8 @@ int main(int argc, char **argv) {
         else {
             printf(GRN"BDAY JSON NULL\n"RESET);
         }
+        tmpDate = JSONtoDT(jsonString);
+        deleteDate(tmpDate);
         free(jsonString);
         jsonString = NULL;
         jsonString = dtToJSON(refCard->anniversary);
@@ -234,24 +235,9 @@ int main(int argc, char **argv) {
 
     if(ADDPROP_TEST) {
         printf(BLUE"\nTESTING ADDPROP\n"RESET);
-        bday = _tCreateTestDateTime(refCard->birthday->date, refCard->birthday->time, refCard->birthday->UTC, refCard->birthday->isText, refCard->birthday->text);
-        anniversary = _tCreateTestDateTime(refCard->anniversary->date, refCard->anniversary->time, refCard->anniversary->UTC, refCard->anniversary->isText, refCard->anniversary->text);
-        retVal = createCard("../test_files/testCardMin.vcf", &minCard);
-        minCard->birthday = bday;
-        minCard->anniversary = anniversary;
-        optionalPropIter = createIterator(refCard->optionalProperties);
-        while((tmp = nextElement(&optionalPropIter)) != NULL) {
-            prop = (Property *)tmp;
-            addProperty(minCard, prop);
-        }
-
-        if(_tObjEqual(minCard, refCard)) {
-            printf(GRN"Passed\n"RESET);
-        }
-        else {
-            printf(RED"Failed\n"RESET);
-        }
-        deleteCard(minCard);
+        prop = _tCreateTestProp(refCard->fn->name,refCard->fn->group);
+        addProperty(refCard, prop);
+        printf(GRN"Passed\n"RESET);
     }
 
     deleteCard(refCard);
