@@ -4,7 +4,8 @@
 #define PTEST 1
 #define WTEST 1
 #define VTEST 1
-#define NUMCARDS 10
+#define NUM_INV_CARDS 31
+#define NUM_V_CARDS 12
 #define BLUE "\033[1m\033[34m"
 
 int main(int argc, char **argv) {
@@ -36,7 +37,11 @@ int main(int argc, char **argv) {
     //printCard Test
     printedCard = printCard(refCard);
     if(printedCard != NULL) {
-        if(PTEST) printf(BLUE"\nTESTING PRINTCARD\n"RESET"%s", printedCard);
+        if(PTEST) printf(BLUE"\nTESTING PRINTCARD\n"RESET GRN"%s"RESET, printedCard);
+        free(printedCard);
+    }
+    else {
+        printf(BLUE"\nTESTING PRINTCARD\n"RESET RED"Attempted to print null card.\n"RESET);
         free(printedCard);
     }
 
@@ -70,42 +75,50 @@ int main(int argc, char **argv) {
     free(retString);
     retString = NULL;
 
-    //validateCard Test
-    retVal = validateCard(refCard);
-    retString = printError(retVal);
-    if(VTEST) {
-        printf(BLUE"\nTESTING VALIDATECARD WITH VALID FILE\n"RESET);
-        if(retVal != OK) {
-            printf(RED);
-        }
-        else {
-            printf(GRN);
-        }
-        printf("validateCard Status: %s\n", retString);
-        printf(RESET);
-    }
-    free(retString);
-    retString = NULL;
-
     if(VTEST) {
         printf(BLUE"\nTESTING VALIDATECARD WITH INVALID FILES\n"RESET);
-        for(int i = 0; i < NUMCARDS; i++) {
-            invCardDir = malloc(sizeof(char) * (strlen("../test_files/validateCardTesting/test1.vcf") + 1));
-            sprintf(invCardDir, "../test_files/validateCardTesting/test%d.vcf", i);
+        for(int i = 0; i < NUM_INV_CARDS; i++) {
+            invCardDir = malloc(sizeof(char) * (strlen("../test_files/validateCardTesting/invalid/test1.vcf") + 4));
+            sprintf(invCardDir, "../test_files/validateCardTesting/invalid/test%d.vcf", i);
             retVal = createCard(invCardDir, &invCard);
             retVal = validateCard(invCard);
             if(retVal != OK) {
                 retString = printError(retVal);
                 printf(GRN"test %d status: %s\n"RESET, i, retString);
                 free(retString);
+                retString = NULL;
             }
             else {
                 retString = printError(retVal);
                 printf(RED"test %d status: %s\n"RESET, i, retString);
                 free(retString);
+                retString = NULL;
             }
             free(invCardDir);
+            invCardDir = NULL;
             deleteCard(invCard);
+        }
+        printf(BLUE"\nTESTING VALIDATECARD WITH VALID FILES\n"RESET);
+        for(int i = 0; i < NUM_V_CARDS; i++) {
+            invCardDir = malloc(sizeof(char) * (strlen("../test_files/validateCardTesting/valid/test1.vcf") + 4));
+            sprintf(invCardDir, "../test_files/validateCardTesting/valid/test%d.vcf", i);
+            retVal = createCard(invCardDir, &invCard);
+            retVal = validateCard(invCard);
+            if(retVal == OK) {
+                retString = printError(retVal);
+                printf(GRN"test %d status: %s\n"RESET, i, retString);
+                free(retString);
+                retString = NULL;
+            }
+            else {
+                retString = printError(retVal);
+                printf(RED"test %d status: %s\n"RESET, i, retString);
+                free(retString);
+                retString = NULL;
+            }
+            free(invCardDir);
+            invCardDir = NULL;
+            deleteCard(invCard); 
         }
     }
 

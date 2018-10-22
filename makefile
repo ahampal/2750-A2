@@ -27,7 +27,7 @@ buildTest:
 
 runTest: buildTest
 	cd bin; \
-	  valgrind --show-leak-kinds=all --leak-check=full --track-origins=yes ./testAPI ../test_files/test1.vcf
+	  valgrind --show-leak-kinds=all --leak-check=full --track-origins=yes ./testAPI ../test_files/testCard.vcf
 	  cd ..;
 
 all: list parser buildTest runTest fullClean
