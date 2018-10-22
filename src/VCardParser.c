@@ -7,6 +7,62 @@
 //creating invalid cards to be used for testing validateCard
 
 //A2 functions
+char* dtToJSON(const DateTime* prop) {
+
+    DateTime *castedProp;
+    char *toReturn;
+    castedProp = (DateTime *)prop;
+
+    if(castedProp == NULL) {
+        toReturn = malloc(sizeof(char));
+        strcpy(toReturn, "\0");
+        return toReturn;
+    }
+
+    toReturn = malloc(sizeof(char) * (strlen("{\"isText\":\0") + 1));
+    strcpy(toReturn, "{\"isText\":\0");
+    if(castedProp->isText == true) {
+        toReturn = realloc(toReturn, strlen(toReturn) + strlen("true,\"date\":\"\0"));
+        strcat(toReturn, "true,\"date\":\"\0");
+    }
+    else {
+        toReturn = realloc(toReturn, strlen(toReturn) + strlen("false,\"date\":\"\0") + 1);
+        strcat(toReturn, "false,\"date\":\"\0");    
+    }
+
+    toReturn = realloc(toReturn, strlen(toReturn) + (strlen(castedProp->date) + 1));
+    strcat(toReturn, castedProp->date);
+    strcat(toReturn, "\0");
+
+    toReturn = realloc(toReturn, strlen(toReturn) + (strlen("\",\"time\":\"\0") + 1));
+    strcat(toReturn, "\",\"time\":\"\0");
+    
+    toReturn = realloc(toReturn, strlen(toReturn) + (strlen(castedProp->time) + 1));
+    strcat(toReturn, castedProp->time);
+    strcat(toReturn, "\0");
+
+    toReturn = realloc(toReturn, strlen(toReturn) + strlen("\",\"text\":\"") + 2);
+    strcat(toReturn, "\",\"text\":\"");
+
+    toReturn = realloc(toReturn, strlen(toReturn) + strlen(castedProp->text) + 1);
+    strcat(toReturn, castedProp->text);
+    strcat(toReturn, "\0");
+
+    toReturn = realloc(toReturn, strlen(toReturn) + strlen("\",\"isUTC\":") + 1);
+    strcat(toReturn, "\",\"isUTC\":\0");
+
+    if(castedProp->UTC == true) {
+        toReturn = realloc(toReturn, strlen(toReturn) + strlen("true}\0"));
+        strcat(toReturn, "true}\0");
+    }
+    else {
+        toReturn = realloc(toReturn, strlen(toReturn) + strlen("false}\0") + 1);
+        strcat(toReturn, "false}\0");  
+    }
+
+    return toReturn;
+}
+
 Property* JSONtoProp(const char* str) {
 
     if(str == NULL) return NULL;
@@ -52,7 +108,7 @@ char* propToJSON(const Property* prop) {
     char *valJSON;
     Property *castedProp = (Property *)prop;
 
-    if(checkPropStruct(castedProp) != OK) {
+    if(castedProp == NULL) {
         toReturn = malloc(sizeof(char));
         strcpy(toReturn, "\0");
         return toReturn;
