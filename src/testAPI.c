@@ -7,6 +7,7 @@
 #define STRLISTTOJSON_TEST 1
 #define JSONTOSTRLIST_TEST 1
 #define PROPTOJSON_TEST 1
+#define JSONTOPROP_TEST 1
 #define NUM_INV_CARDS 31
 #define NUM_V_CARDS 12
 #define BLUE "\033[1m\033[34m"
@@ -25,7 +26,7 @@ int main(int argc, char **argv) {
     void *tmp;
     List *tmpList;
     char *jsonString;
-
+    Property *AnotherProp;
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
     retString = printError(retVal);
@@ -181,6 +182,24 @@ int main(int argc, char **argv) {
             }
             free(jsonString);
             jsonString = NULL;
+        }
+    }
+
+    if(JSONTOPROP_TEST) {
+        printf(BLUE"\nTESTING JSONTOPROP\n"RESET);
+        optionalPropIter = createIterator(refCard->optionalProperties);
+        while((tmp = nextElement(&optionalPropIter)) != NULL) {
+            prop = (Property *)tmp;
+            jsonString = propToJSON(prop);
+            AnotherProp = JSONtoProp(jsonString);
+            if(_tEqualPropNoParam(prop, AnotherProp)) {
+                printf(GRN"refProp and created createdProp are equal.\n"RESET);
+            }
+            else {
+                printf(RED"properties are not equal.\n"RESET);
+            }
+            free(jsonString);
+            deleteProperty(AnotherProp);
         }
     }
 
