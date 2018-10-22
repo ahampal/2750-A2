@@ -306,6 +306,43 @@ bool _tParamEqual(const void* param1, const void* param2){
     return true;
 }
 
+bool _tEqualPropNoParam(const void* prop1, const void* prop2){
+
+    Property* tmpProp1;
+	Property* tmpProp2;
+	
+	if (prop1 == prop2 && prop1 == NULL){
+		return true;
+	}
+
+	if (prop1 == NULL || prop2 == NULL){
+		return false;
+	}
+	
+	tmpProp1 = (Property*)prop1;
+	tmpProp2 = (Property*)prop2;
+
+    //Check prop names
+    
+    if (!_tStrEqual(tmpProp1->name, tmpProp2->name)){
+        return false;
+    }
+
+    //Check prop groups
+    if (!_tStrEqual(tmpProp1->group, tmpProp2->group)) {
+        return false;
+    }
+
+    //Check prop value lists
+    if (!_tListEqual(tmpProp1->values, tmpProp2->values, &_tValueEqual)){
+        return false;
+    }
+
+    
+    return true;
+}
+
+
 bool _tPropEqual(const void* prop1, const void* prop2){
 
     Property* tmpProp1;

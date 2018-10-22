@@ -49,7 +49,7 @@ bool _tParamEqual(const void* param1, const void* param2);
 bool _tPropEqual(const void* prop1, const void* prop2);
 bool _tDateTimeEqual(DateTime* dt1, DateTime* dt2);
 bool _tObjEqual(const Card* card1, const Card* card2);
-
+bool _tEqualPropNoParam(const void* prop1, const void* prop2);
 
 void _tPrintObj(char* message, Card* obj);
 
