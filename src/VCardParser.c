@@ -47,8 +47,37 @@ char* strListToJSON(const List* strList) {
 }
 
 List* JSONtoStrList(const char* str) {
-    
+
     if(str == NULL) return NULL;
+    if(*str != '[') return NULL;
+    if(str[strlen(str) - 1] != ']') return NULL;
+
+    char *dQuoteOne = NULL;
+    char *dQuoteTwo = NULL;
+    char *listVal = NULL;
+    char *castedStr = NULL;
+    List *toReturn;
+
+    castedStr = (char *)str;
+    dQuoteOne = myStrChr(castedStr, '\"');
+    dQuoteTwo = myStrChr(dQuoteOne + 1, '\"');
+
+    toReturn = initializeList(&printValue, &deleteValue, &compareValues);
+    while(dQuoteOne != NULL && dQuoteTwo != NULL) {
+        listVal = malloc(sizeof(char) * (dQuoteTwo - dQuoteOne + 1));
+        strncpy(listVal, dQuoteOne + 1, dQuoteTwo - dQuoteOne - 1);
+        listVal[dQuoteTwo - dQuoteOne - 1] = '\0';
+        insertBack(toReturn, listVal);
+        listVal++;
+        dQuoteOne = myStrChr(dQuoteTwo + 1, '\"');
+        if(dQuoteOne != NULL) {
+            dQuoteTwo = myStrChr(dQuoteOne + 1, '\"');
+        }
+        else {
+            dQuoteTwo = NULL;
+        }
+    }
+    return toReturn;
 }
 
 VCardErrorCode writeCard(const char* fileName, const Card* obj) {
@@ -1887,6 +1916,7 @@ char* printProperty(void* toBePrinted) {
         strcat(toReturn, str);
         strcat(toReturn, ";");
         strcat(toReturn, "\0");
+        free(str);
     }
     toReturn[strlen(toReturn) - 1] = '\0';
     return toReturn;
@@ -1985,15 +2015,18 @@ int compareValues(const void* first,const void* second) {
 char* printValue(void* toBePrinted) {
     
     char *a;
-
+    char *castedArg;
     if(toBePrinted == NULL) {
         a = malloc(sizeof(char));
-        strcpy(a, "");
+        strcpy(a, "\0");
         return a;
     }
 
-    a = (char *)toBePrinted;
-
+    castedArg = (char *)toBePrinted;
+    a = malloc(sizeof(char) * (strlen(castedArg) + 1));
+    strcpy(a, castedArg);
+    strcat(a,"\0");
+    
     return a;
 }
 
