@@ -8,6 +8,7 @@
 #define JSONTOSTRLIST_TEST 1
 #define PROPTOJSON_TEST 1
 #define JSONTOPROP_TEST 1
+#define DTTOJSON_TEST 1
 #define NUM_INV_CARDS 31
 #define NUM_V_CARDS 12
 #define BLUE "\033[1m\033[34m"
@@ -193,14 +194,37 @@ int main(int argc, char **argv) {
             jsonString = propToJSON(prop);
             AnotherProp = JSONtoProp(jsonString);
             if(_tEqualPropNoParam(prop, AnotherProp)) {
-                printf(GRN"refProp and created createdProp are equal.\n"RESET);
+                printf(GRN"refProp ands createdProp are equal\n"RESET);
             }
             else {
-                printf(RED"properties are not equal.\n"RESET);
+                printf(RED"properties are not equal\n"RESET);
             }
             free(jsonString);
             deleteProperty(AnotherProp);
         }
+    }
+
+    if(DTTOJSON_TEST) {
+        jsonString = NULL;
+        printf(BLUE"\nTESTING DTTOJSON\n"RESET);
+        jsonString = dtToJSON(refCard->birthday);
+        if(jsonString != NULL) {
+            printf(GRN"BDAY JSON: %s\n"RESET, jsonString);
+        }
+        else {
+            printf(GRN"BDAY JSON NULL\n"RESET);
+        }
+        free(jsonString);
+        jsonString = NULL;
+        jsonString = dtToJSON(refCard->anniversary);
+        if(jsonString != NULL) {
+            printf(GRN"ANNIVERSARY JSON: %s\n"RESET, jsonString);
+        }
+        else {
+            printf(GRN"ANNIVERSARY JSON NULL\n"RESET);
+        }
+        free(jsonString);
+        jsonString = NULL;
     }
 
     deleteCard(refCard);
