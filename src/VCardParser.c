@@ -7,6 +7,58 @@
 //creating invalid cards to be used for testing validateCard
 
 //A2 functions
+void addProperty(Card* card, const Property* toBeAdded) {
+
+    if(card == NULL || toBeAdded == NULL) {
+        return;
+    }
+
+    Property *prop;
+    ListIterator paramIter;
+    ListIterator valIter;
+    void *tmp;
+    Parameter *currParam;
+    Parameter *paramToBeAdded;
+    char *currVal;
+    char *valToBeAdded;
+
+    prop = malloc(sizeof(Property));
+    prop->group = malloc(sizeof(char) * (strlen(toBeAdded->group) + 1));
+    prop->name = malloc(sizeof(char) * (strlen(toBeAdded->name) + 1));
+    prop->parameters = initializeList(&printParameter, &deleteParameter, &compareParameters);
+    prop->values = initializeList(&printValue, &deleteValue, &compareValues);
+
+    strcpy(prop->group, toBeAdded->group);
+    strcat(prop->group, "\0");
+
+    strcpy(prop->name, toBeAdded->name);
+    strcat(prop->name, "\0");
+
+    paramIter = createIterator(toBeAdded->parameters);
+    while((tmp = nextElement(&paramIter)) != NULL) {
+        currParam = (Parameter *)tmp;
+        paramToBeAdded = malloc(sizeof(Parameter) + (sizeof(char)*(strlen(currParam->value)+1)) );
+        strcpy(paramToBeAdded->name, currParam->name);
+        strcpy(paramToBeAdded->value, currParam->value);
+        insertBack(prop->parameters, paramToBeAdded);
+        paramToBeAdded++;
+    }
+
+    valIter = createIterator(toBeAdded->values);
+    while((tmp = nextElement(&valIter)) != NULL) {
+        currVal = (char *)tmp;
+        valToBeAdded = malloc((sizeof(char)*(strlen(currVal)+1)) );
+        strcpy(valToBeAdded, currVal);
+        strcat(valToBeAdded, "\0");
+        insertBack(prop->values, valToBeAdded);
+        valToBeAdded++;
+    }
+
+    insertBack(card->optionalProperties, prop);
+
+    return;
+}
+
 char* dtToJSON(const DateTime* prop) {
 
     DateTime *castedProp;
