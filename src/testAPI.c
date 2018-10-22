@@ -5,6 +5,7 @@
 #define WTEST 1
 #define VTEST 1
 #define STEST 1
+#define JTEST 1
 #define NUM_INV_CARDS 31
 #define NUM_V_CARDS 12
 #define BLUE "\033[1m\033[34m"
@@ -21,6 +22,8 @@ int main(int argc, char **argv) {
     ListIterator optionalPropIter;
     Property *prop;
     void *tmp;
+    List *tmpList;
+    char *jsonString;
 
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
@@ -143,6 +146,23 @@ int main(int argc, char **argv) {
             free(listToStr);
             listToStr = NULL;
         }
+    }
+
+    if(JTEST) {
+        printf(BLUE"\nTESTING JSONTOSTRLIST\n"RESET);
+        prop = getFromFront(refCard->optionalProperties);
+        jsonString = strListToJSON(prop->values);
+        tmpList = JSONtoStrList(jsonString);
+        if(tmpList == NULL) {
+            printf(RED"Failed to create list\n"RESET);
+        }
+        else {
+            printf(GRN);
+            _tPrintList("Created List. Contents of list are: ", tmpList);
+            printf(RESET);
+        }
+        free(jsonString);
+        freeList(tmpList);
     }
 
     deleteCard(refCard);
