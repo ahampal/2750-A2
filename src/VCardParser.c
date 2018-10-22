@@ -2,11 +2,55 @@
 #include <ctype.h>
 
 #define DEBUG 0 
-#define CREATECARD_ERROR_CHECKING 0 
+#define CREATECARD_ERROR_CHECKING 0
 //Turning error checking off may result in crashes but is necessary for
 //creating invalid cards to be used for testing validateCard
 
 //A2 functions
+char* strListToJSON(const List* strList) {
+
+    if(strList == NULL) return NULL;
+
+    char *toReturn;
+    List *castedList;
+    int listLen;
+    ListIterator strIter;
+    void *node;
+    char *currStr;
+    int currStrLen;
+
+    castedList = (List *)strList;
+    listLen = getLength(castedList);
+
+    if(listLen == 0) {
+        toReturn = malloc(sizeof(char) * 3);
+        strcpy(toReturn,"[]\0");
+        return toReturn;
+    }
+
+    toReturn = malloc(sizeof(char) * 2);
+    strcpy(toReturn, "[\0");
+    strIter = createIterator(castedList);
+
+    while((node = nextElement(&strIter)) != NULL) {
+        currStr = (char *)node;
+        currStrLen = strlen(currStr);
+        toReturn = realloc(toReturn, strlen(toReturn) + currStrLen + 4);
+        strcat(toReturn, "\"");
+        strcat(toReturn, currStr);
+        strcat(toReturn, "\",\0");
+    }
+
+    toReturn[strlen(toReturn) - 1] = ']';
+
+    return toReturn;
+}
+
+List* JSONtoStrList(const char* str) {
+    
+    if(str == NULL) return NULL;
+}
+
 VCardErrorCode writeCard(const char* fileName, const Card* obj) {
 
     if(fileName == NULL) return WRITE_ERROR;
