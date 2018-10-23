@@ -32,6 +32,7 @@ int main(int argc, char **argv) {
     Property *AnotherProp;
     DateTime *tmpDate;
     Card *jsonCard;
+    int flag;
 
     //createCard Test
     retVal = createCard(argv[argc - 1], &refCard);
@@ -146,7 +147,7 @@ int main(int argc, char **argv) {
             prop = (Property *)tmp;
             listToStr = strListToJSON(prop->values);
             if(listToStr == NULL) {
-                printf(RED"Null JSON String\n"RESET);
+                printf(RED"JSON String is: NULL\n"RESET);
             }
             else {
                 printf(GRN"JSON String is: %s\n"RESET, listToStr);
@@ -260,6 +261,18 @@ int main(int argc, char **argv) {
         free(jsonString);
         jsonString = NULL;
 
+        tmpDate = JSONtoDT("{\"isText\":true,\"date\":\"\",\"time\":\"\",\"text\":\"circa 1989\",\"isUTC\":\"true\"}");
+        if(tmpDate == NULL) {
+            printf(RED"DateTime struct is Null\n"RESET);
+        }
+        else {
+            retString = printDate(tmpDate);
+            printf(GRN"DateTime struct is: \n%s\n"RESET, retString);
+            free(retString);
+            retString = NULL;
+        }
+        deleteDate(tmpDate);
+        
         tmpDate = JSONtoDT("{\"isText\":,\"date\":\"19540203\",\"time\":\"123012\",\"text\":\"\",\"isUTC\":\"true\"}");
         if(tmpDate != NULL) {
             printf(RED"Failed\n"RESET);
@@ -272,9 +285,21 @@ int main(int argc, char **argv) {
 
     if(ADDPROP_TEST) {
         printf(BLUE"\nTESTING ADDPROP\n"RESET);
-        prop = _tCreateTestProp(refCard->fn->name,refCard->fn->group);
-        addProperty(refCard, prop);
-        printf(GRN"Passed\n"RESET);
+        addProperty(refCard, refCard->fn);
+        optionalPropIter = createIterator(refCard->optionalProperties);
+        flag = 0;
+        while((tmp = nextElement(&optionalPropIter)) != NULL) {
+            AnotherProp = (Property *)tmp;
+            if(_tPropEqual(refCard->fn, AnotherProp)) {
+                printf(GRN"Passed\n"RESET);
+                flag = 1;
+                deleteDataFromList(refCard->optionalProperties, refCard->fn);
+                break;
+            }
+        }
+        if(flag == 0) {
+            printf(RED"Failed\n"RESET);
+        }
     }
 
     if(JSONTOCARD_TEST) {
