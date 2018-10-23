@@ -219,8 +219,6 @@ int main(int argc, char **argv) {
         else {
             printf(GRN"BDAY JSON NULL\n"RESET);
         }
-        tmpDate = JSONtoDT(jsonString);
-        deleteDate(tmpDate);
         free(jsonString);
         jsonString = NULL;
         jsonString = dtToJSON(refCard->anniversary);
@@ -230,8 +228,46 @@ int main(int argc, char **argv) {
         else {
             printf(GRN"ANNIVERSARY JSON NULL\n"RESET);
         }
+        printf(BLUE"\nTESTING JSONTODT\n"RESET);
+        tmpDate = JSONtoDT(jsonString);
+        if(tmpDate == NULL) {
+            printf(RED"DateTime struct is null\n"RESET);
+        }
+        else {
+            retString = printDate(tmpDate);
+            printf(GRN"DateTime struct is: \n%s\n"RESET, retString);
+            free(retString);
+            retString = NULL;
+        }
+        deleteDate(tmpDate);
+        tmpDate = NULL;
         free(jsonString);
         jsonString = NULL;
+
+        jsonString = dtToJSON(refCard->birthday);
+        tmpDate = JSONtoDT(jsonString);
+        if(tmpDate == NULL) {
+            printf(RED"DateTime struct is null\n"RESET);
+        }
+        else {
+            retString = printDate(tmpDate);
+            printf(GRN"DateTime struct is: \n%s\n"RESET,retString);
+            free(retString);
+            retString = NULL;
+        }
+        deleteDate(tmpDate);
+        tmpDate = NULL;
+        free(jsonString);
+        jsonString = NULL;
+
+        tmpDate = JSONtoDT("{\"isText\":,\"date\":\"19540203\",\"time\":\"123012\",\"text\":\"\",\"isUTC\":\"true\"}");
+        if(tmpDate != NULL) {
+            printf(RED"Failed\n"RESET);
+        }
+        else {
+            printf(GRN"Passed\n"RESET);
+        }
+        deleteDate(tmpDate);
     }
 
     if(ADDPROP_TEST) {
