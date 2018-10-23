@@ -109,20 +109,19 @@ DateTime* JSONtoDT(const char* str) {
         toReturn->isText = true;
         toReturn->UTC = false;
 
-        strcpy(toReturn->time, "");
-        strcpy(toReturn->date, "");
+        strcpy(toReturn->time, "\0");
+        strcpy(toReturn->date, "\0");
 
-        tmpOne = myStrChr(tmpOne, ':');
-        tmpOne = myStrChr(tmpOne, ':');
-        tmpOne = myStrChr(tmpOne, ':');
-        tmpTwo = myStrChr(tmpOne + 1, '\"');
+        tmpOne = myStrChr(tmpOne + 1, ':');
+        tmpOne = myStrChr(tmpOne + 1, ':');
+        tmpOne = myStrChr(tmpOne + 1, ':');
+        tmpTwo = myStrChr(tmpOne + 2, '\"');
 
-        free(val);
         val = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
-        strncpy(val, tmpOne + 1, tmpTwo - tmpOne - 1);
-        val[tmpTwo - tmpOne - 1] = '\0';
+        strncpy(val, tmpOne + 2, tmpTwo - tmpOne - 1);
+        val[tmpTwo - tmpOne - 2] = '\0';
 
-        toReturn = realloc(toReturn, sizeof(DateTime) + strlen(val));
+        toReturn = realloc(toReturn, sizeof(DateTime) + (sizeof(char) * (strlen(val) + 1) ));
         strcpy(toReturn->text, val);
 
         free(val);
