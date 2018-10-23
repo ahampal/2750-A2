@@ -65,17 +65,18 @@ DateTime* JSONtoDT(const char* str) {
 
     toReturn = malloc(sizeof(DateTime));
     castedStr = (char *)str;
-    tmpOne = myStrChr(castedStr, ':');
-    tmpTwo = myStrChr(tmpOne, ',');
 
     if(*castedStr != '{' || castedStr[strlen(castedStr) - 1] != '}') {
         return NULL;
     }
 
+    tmpOne = myStrChr(castedStr, ':');
+    tmpTwo = myStrChr(tmpOne + 1, '\"');
+
     val = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
     strncpy(val, tmpOne + 1, tmpTwo - tmpOne - 1);
-    val[tmpTwo - tmpOne - 1] = '\0';
-
+    val[tmpTwo - tmpOne - 2] = '\0';
+//{"isText":"false","date":"19540203","time":"123012","text":"","isUTC":"true"}
     if(strcmp(val, "false") == 0) {
         free(val);
         toReturn = realloc(toReturn, sizeof(DateTime) + sizeof(char));
@@ -84,26 +85,26 @@ DateTime* JSONtoDT(const char* str) {
         strcpy(toReturn->text, "");
 
         tmpOne = myStrChr(tmpOne + 1, ':');
-        tmpTwo = myStrChr(tmpOne + 1, '\"');
+        tmpTwo = myStrChr(tmpOne + 2, '\"');
 
         val = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
-        strncpy(val, tmpOne + 1, tmpTwo - tmpOne - 1);
-        val[tmpTwo - tmpOne - 1] = '\0';
+        strncpy(val, tmpOne + 2, tmpTwo - tmpOne - 2);
+        val[tmpTwo - tmpOne - 2] = '\0';
 
-        strcpy(toReturn->date, val);
+        strncpy(toReturn->date, val,9);
         free(val);
 
         tmpOne = myStrChr(tmpOne + 1, ':');
-        tmpTwo = myStrChr(tmpOne + 1, '\"');
+        tmpTwo = myStrChr(tmpOne + 2, '\"');
 
         val = malloc(sizeof(char) * (tmpTwo - tmpOne + 1));
-        strncpy(val, tmpOne + 1, tmpTwo - tmpOne - 1);
-        val[tmpTwo - tmpOne - 1] = '\0';
+        strncpy(val, tmpOne + 2, tmpTwo - tmpOne - 2);
+        val[tmpTwo - tmpOne - 2] = '\0';
 
-        strcpy(toReturn->time, val);
+        strncpy(toReturn->time, val,7);
         free(val);
     }
-    else {
+    else if(strcmp(val, "true") == 0){
         free(val);
         toReturn->isText = true;
         toReturn->UTC = false;
@@ -126,15 +127,18 @@ DateTime* JSONtoDT(const char* str) {
 
         free(val);
     }
+    else {
+        free(val);
+        deleteDate(toReturn);
+        return NULL;
+    }
 
     return toReturn;
 }
 
 void addProperty(Card* card, const Property* toBeAdded) {
 
-    if(card == NULL || toBeAdded == NULL) {
-        return;
-    }
+    if(card == NULL || toBeAdded == NULL) return;
     Property *castedProp = (Property *)toBeAdded;
     /*
     Property *prop;
