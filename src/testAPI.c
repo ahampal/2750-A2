@@ -280,6 +280,24 @@ int main(int argc, char **argv) {
         else {
             printf(GRN"Passed\n"RESET);
         }
+
+        deleteDate(tmpDate);
+        tmpDate = JSONtoDT("\"isText\":,\"date\":\"19540203\",\"time\":\"123012\",\"text\":\"\",\"isUTC\":\"true\"}");
+        if(tmpDate != NULL) {
+            printf(RED"Failed\n"RESET);
+        }
+        else {
+            printf(GRN"Passed\n"RESET);
+        }
+        deleteDate(tmpDate);
+
+        tmpDate = JSONtoDT("{\"isText\":,\"date\":\"19540203\",\"time\":\"123012\",\"text\":\"\",\"isUTC\":\"true\"");
+        if(tmpDate != NULL) {
+            printf(RED"Failed\n"RESET);
+        }
+        else {
+            printf(GRN"Passed\n"RESET);
+        }
         deleteDate(tmpDate);
     }
 
