@@ -63,12 +63,13 @@ DateTime* JSONtoDT(const char* str) {
     char *tmpTwo;
     char *val;
 
-    toReturn = malloc(sizeof(DateTime));
     castedStr = (char *)str;
-
+    
     if(*castedStr != '{' || castedStr[strlen(castedStr) - 1] != '}') {
         return NULL;
     }
+
+    toReturn = malloc(sizeof(DateTime));
 
     tmpOne = myStrChr(castedStr, ':');
     tmpTwo = myStrChr(tmpOne + 1, '\"');
