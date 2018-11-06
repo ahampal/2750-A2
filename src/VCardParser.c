@@ -2,7 +2,7 @@
 #include <ctype.h>
 
 #define DEBUG 0 
-#define CREATECARD_ERROR_CHECKING 0
+#define CREATECARD_ERROR_CHECKING 1
 //Turning error checking off may result in crashes but is necessary for
 //creating invalid cards to be used for testing validateCard
 
@@ -64,7 +64,6 @@ DateTime* JSONtoDT(const char* str) {
     char *val;
 
     castedStr = (char *)str;
-    
     if(*castedStr != '{' || castedStr[strlen(castedStr) - 1] != '}') {
         return NULL;
     }
@@ -793,7 +792,7 @@ VCardErrorCode checkDTStruct(DateTime *a) {
     if(toCheck->isText == true && strcmp(toCheck->date, "") != 0) return INV_DT;
     if(toCheck->isText == true && strcmp(toCheck->time, "") != 0) return INV_DT;
     if(toCheck->isText == false && strcmp(toCheck->text, "") != 0) return INV_DT;
-    if(toCheck->isText == false && toCheck->UTC == true) return INV_DT;
+    if(toCheck->isText == true && toCheck->UTC == true) return INV_DT;
 
     if(toCheck->isText == false) {
         if(strcmp(toCheck->date, "") == 0 && strcmp(toCheck->time, "") == 0) return INV_DT;
@@ -1403,7 +1402,7 @@ VCardErrorCode parseFile(char *buffer, Card **newCardObject) {
         else if( (strcmp(upperCaseStr(lProp), "BDAY") == 0 && ((*newCardObject)->birthday == NULL)) || ( ((*newCardObject)->anniversary == NULL ) && strcmp(upperCaseStr(lProp), "ANNIVERSARY") == 0 ) )  {
             deleteProperty(newProp);
             newDate = malloc( sizeof(DateTime) + ( (strlen(lVal) + 1) *sizeof(char) ) );
-            if(strstr(lParam, "VALUE=text") == NULL) {
+            if(strstr(lParam, "VALUE=text") == NULL && strstr(lVal, " ") == NULL) {
                 newDate->isText = false;
                 strcpy(newDate->text, "\0");
                 if(lVal[strlen(lVal) - 1] == 'Z') {
