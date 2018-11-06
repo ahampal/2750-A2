@@ -16,8 +16,8 @@ a linked list api to organize and store vCards in memory. There are several func
 -StructtoJSON type functions to create usable json strings from structs
 
 Compilation:
--cd terminal to A2AmitHampal/assign2
--execute makefile by typing 'make' into terminal
+-cd terminal to directory structure
+-execute makefile by typing 'make all' into terminal
 
 Assumptions and limitations:
 -No known limitations
